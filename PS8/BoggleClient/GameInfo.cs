@@ -43,7 +43,15 @@ namespace BoggleClient
         /// </summary>
         public int Duration
         {
-            get { return int.Parse(durationTextBox.Text); }
+            get
+            {
+                int d = 0;
+                if (int.TryParse(durationTextBox.Text, out d))
+                {
+                    return d;
+                }
+                return -1;
+            }
         }
     }
 }

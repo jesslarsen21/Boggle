@@ -12,6 +12,8 @@ namespace BoggleClient
 {
     public partial class BoggleGUI : Form, IBoggleView
     {
+        // TODO Trigger each action in a new task, so that the GUI can remain responsive.
+
         // Contains an iterable list of the boggle letter labels.
         private LinkedList<object> letterLabels;
 
@@ -22,6 +24,7 @@ namespace BoggleClient
         public BoggleGUI()
         {
             InitializeComponent();
+            new Controller(this);
             CaptureGameInfo();
             letterLabels = new LinkedList<object>();
             letterLabels.AddLast(label1);
@@ -49,7 +52,7 @@ namespace BoggleClient
         {
             set
             {
-                MessageBox.Show(value, "Information.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(value, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -58,7 +61,23 @@ namespace BoggleClient
         /// </summary>
         public DialogResult Warning(string message)
         {
-            return MessageBox.Show(message, "Warning.", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            return MessageBox.Show(message, "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+        }
+
+        /// <summary>
+        /// Displays a warning dialog box.
+        /// </summary>
+        public DialogResult Error(string message)
+        {
+            return MessageBox.Show(message, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+        }
+
+        /// <summary>
+        /// Allows access to the time label for the controller class.
+        /// </summary>
+        public string Time
+        {
+            set { timeLabel.Text = value; }
         }
 
         /// <summary>
@@ -66,7 +85,6 @@ namespace BoggleClient
         /// </summary>
         public string Score
         {
-            get { return scoreLabel.Text; }
             set { scoreLabel.Text = value; }
         }
 
@@ -147,6 +165,17 @@ namespace BoggleClient
             {
                 QuitGameEvent();
             }
+        }
+
+        private void helpButton_Click(object sender, EventArgs e)
+        {
+            string str = "Controls:\n"
+                + "To enter a word, type it into the textbox and press the Enter key or click the Enter button.\n"
+                + "To quit the current game, click the Quit button.\n"
+                + "To close the window, click the OS-designated close button.\n\n"
+                + "How to Play:\n"
+                + "For more information, check out http://en.wikipedia.org/wiki/Boggle";
+            MessageBox.Show(str, "Information.", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

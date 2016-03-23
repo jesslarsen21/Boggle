@@ -50,6 +50,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.enterWord = new System.Windows.Forms.Button();
             this.blankSpacer = new System.Windows.Forms.Label();
+            this.helpButton = new System.Windows.Forms.Button();
             this.quitGame = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.scoreLabel = new System.Windows.Forms.Label();
@@ -309,6 +310,7 @@
             this.flowLayoutPanel1.Controls.Add(this.textBox1);
             this.flowLayoutPanel1.Controls.Add(this.enterWord);
             this.flowLayoutPanel1.Controls.Add(this.blankSpacer);
+            this.flowLayoutPanel1.Controls.Add(this.helpButton);
             this.flowLayoutPanel1.Controls.Add(this.quitGame);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 3);
@@ -337,8 +339,18 @@
             // 
             this.blankSpacer.Location = new System.Drawing.Point(290, 0);
             this.blankSpacer.Name = "blankSpacer";
-            this.blankSpacer.Size = new System.Drawing.Size(138, 10);
+            this.blankSpacer.Size = new System.Drawing.Size(57, 10);
             this.blankSpacer.TabIndex = 2;
+            // 
+            // helpButton
+            // 
+            this.helpButton.Location = new System.Drawing.Point(353, 3);
+            this.helpButton.Name = "helpButton";
+            this.helpButton.Size = new System.Drawing.Size(75, 23);
+            this.helpButton.TabIndex = 4;
+            this.helpButton.Text = "Help";
+            this.helpButton.UseVisualStyleBackColor = true;
+            this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
             // 
             // quitGame
             // 
@@ -397,6 +409,7 @@
             this.ClientSize = new System.Drawing.Size(518, 575);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "BoggleGUI";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Boggle Client";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.gameTable.ResumeLayout(false);
@@ -437,6 +450,7 @@
         private System.Windows.Forms.Label scoreLabel;
         private System.Windows.Forms.Label timeLabel;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.Button helpButton;
     }
 }
 

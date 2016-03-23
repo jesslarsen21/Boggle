@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,6 +57,12 @@
       <DependentUpon>BoggleGUI.cs</DependentUpon>
     </Compile>
     <Compile Include="Controller.cs" />
+    <Compile Include="FinalScore.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FinalScore.Designer.cs">
+      <DependentUpon>FinalScore.cs</DependentUpon>
+    </Compile>
     <Compile Include="GameInfo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,13 +70,25 @@
       <DependentUpon>GameInfo.cs</DependentUpon>
     </Compile>
     <Compile Include="IBoggleView.cs" />
+    <Compile Include="LoadingGame.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoadingGame.Designer.cs">
+      <DependentUpon>LoadingGame.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BoggleGUI.resx">
       <DependentUpon>BoggleGUI.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FinalScore.resx">
+      <DependentUpon>FinalScore.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GameInfo.resx">
       <DependentUpon>GameInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoadingGame.resx">
+      <DependentUpon>LoadingGame.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -89,6 +111,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TextFile1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

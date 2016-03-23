@@ -21,10 +21,14 @@ namespace BoggleClient
 
         string Message { set; }
 
-        string Score { get; set; }
+        string Score { set; }
+
+        string Time { set; }
 
         string WordsGuessed { set; }
 
         DialogResult Warning(string message);
+
+        DialogResult Error(string message);
     }
 }
