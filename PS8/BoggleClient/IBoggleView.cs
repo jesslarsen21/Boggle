@@ -9,11 +9,11 @@ namespace BoggleClient
 {
     interface IBoggleView
     {
+        event Action<string, string, int> NewGameEvent;
+
         event Action<string> EnterWordEvent;
 
         event Action QuitGameEvent;
-
-        event Action CloseEvent;
 
         void DoClose();
 

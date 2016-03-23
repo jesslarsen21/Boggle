@@ -51,10 +51,13 @@
             this.enterWord = new System.Windows.Forms.Button();
             this.blankSpacer = new System.Windows.Forms.Label();
             this.quitGame = new System.Windows.Forms.Button();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.scoreLabel = new System.Windows.Forms.Label();
+            this.timeLabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.gameTable.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -63,7 +66,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.gameTable, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.scoreLabel, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -328,6 +331,7 @@
             this.enterWord.TabIndex = 1;
             this.enterWord.Text = "Enter";
             this.enterWord.UseVisualStyleBackColor = true;
+            this.enterWord.Click += new System.EventHandler(this.enterWord_Click);
             // 
             // blankSpacer
             // 
@@ -344,34 +348,63 @@
             this.quitGame.TabIndex = 3;
             this.quitGame.Text = "Quit";
             this.quitGame.UseVisualStyleBackColor = true;
+            this.quitGame.Click += new System.EventHandler(this.quitGame_Click);
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 2;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.Controls.Add(this.scoreLabel, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.timeLabel, 0, 0);
+            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 37);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 1;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(512, 28);
+            this.tableLayoutPanel2.TabIndex = 2;
             // 
             // scoreLabel
             // 
             this.scoreLabel.AutoSize = true;
-            this.scoreLabel.Dock = System.Windows.Forms.DockStyle.Left;
+            this.scoreLabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.scoreLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.scoreLabel.Location = new System.Drawing.Point(3, 34);
+            this.scoreLabel.Location = new System.Drawing.Point(259, 0);
             this.scoreLabel.Name = "scoreLabel";
-            this.scoreLabel.Size = new System.Drawing.Size(160, 34);
-            this.scoreLabel.TabIndex = 2;
+            this.scoreLabel.Size = new System.Drawing.Size(250, 28);
+            this.scoreLabel.TabIndex = 5;
             this.scoreLabel.Text = "User 1: #. User 2: #.";
-            this.scoreLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.scoreLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // Form1
+            // timeLabel
+            // 
+            this.timeLabel.AutoSize = true;
+            this.timeLabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.timeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.timeLabel.Location = new System.Drawing.Point(3, 0);
+            this.timeLabel.Name = "timeLabel";
+            this.timeLabel.Size = new System.Drawing.Size(250, 28);
+            this.timeLabel.TabIndex = 0;
+            this.timeLabel.Text = "Time remaining: ##";
+            this.timeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // BoggleGUI
             // 
             this.AcceptButton = this.enterWord;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(518, 575);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "Form1";
+            this.Name = "BoggleGUI";
             this.Text = "Boggle Client";
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
             this.gameTable.ResumeLayout(false);
             this.gameTable.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
+            this.tableLayoutPanel2.ResumeLayout(false);
+            this.tableLayoutPanel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -399,9 +432,11 @@
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button enterWord;
-        private System.Windows.Forms.Label scoreLabel;
         private System.Windows.Forms.Label blankSpacer;
         private System.Windows.Forms.Button quitGame;
+        private System.Windows.Forms.Label scoreLabel;
+        private System.Windows.Forms.Label timeLabel;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
     }
 }
 
