@@ -25,7 +25,6 @@ namespace BoggleClient
         {
             InitializeComponent();
             new Controller(this);
-            CaptureGameInfo();
             letterLabels = new LinkedList<object>();
             letterLabels.AddLast(label1);
             letterLabels.AddLast(label2);
@@ -43,6 +42,7 @@ namespace BoggleClient
             letterLabels.AddLast(label14);
             letterLabels.AddLast(label15);
             letterLabels.AddLast(label16);
+            CaptureGameInfo();
         }
 
         /// <summary>
