@@ -109,7 +109,7 @@ namespace BoggleClient
             task2.Wait();
 
             // Close the window
-            token1.Cancel();
+            form.DoClose();
 
             Task monitorTask = new Task(() => MonitorGameStatus());
             monitorTask.Start();

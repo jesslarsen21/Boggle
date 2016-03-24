@@ -184,6 +184,7 @@ namespace BoggleClient
             if (textBox1.Text != "" && EnterWordEvent != null)
             {
                 EnterWordEvent(textBox1.Text);
+                textBox1.Text = "";
             }
         }
 
