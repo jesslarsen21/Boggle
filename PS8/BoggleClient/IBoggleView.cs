@@ -21,11 +21,9 @@ namespace BoggleClient
 
         string Message { set; }
 
-        string Score { set; }
+        void SetScore(string text);
 
-        string Time { set; }
-
-        string WordsGuessed { set; }
+        void SetTime(string text);
 
         DialogResult Warning(string message);
 

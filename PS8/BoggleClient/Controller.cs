@@ -6,6 +6,9 @@ using System.Dynamic;
 using System.Text;
 using System.Net;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Timers;
 
 namespace BoggleClient
 {
@@ -20,6 +23,7 @@ namespace BoggleClient
         private static int timeLeft;
         private static dynamic player1;
         private static dynamic player2;
+        private System.Timers.Timer timer;
 
         public Controller(IBoggleView window)
         {
@@ -32,6 +36,7 @@ namespace BoggleClient
             timeLeft = 0;
             player1 = null;
             player2 = null;
+            timer = new System.Timers.Timer();
             window.NewGameEvent += Window_NewGameEvent;
             window.EnterWordEvent += Window_EnterWordEvent;
             window.QuitGameEvent += Window_QuitGameEvent;
@@ -62,31 +67,59 @@ namespace BoggleClient
         private void Window_NewGameEvent(string domain, string nickname, int duration)
         {
             serverDomain = domain;
+            CancellationTokenSource token1 = new CancellationTokenSource();
+            CancellationTokenSource token2 = new CancellationTokenSource();
+            CancellationTokenSource token3 = new CancellationTokenSource();
+            LoadingGame form = new LoadingGame();
+            form.InfoText = "Creating user ID and connecting to game...\n"
+                + "To cancel operation, click Abort.\nThe window will close upon completion.";
+            Task<DialogResult> task1 = new Task<DialogResult>(() => form.ShowDialog(), token1.Token);
+            task1.Start();
+
+            // If the user presses the cancel button, quit the game creation.
+            if (task1.IsCompleted && task1.Result == DialogResult.Abort)
+            {
+                token1.Cancel();
+                window.Message = "Game creation canceled.";
+                return;
+            }
 
             // Create a new user, with the given nickname.
-            CreateUser(nickname);
+            Task task2 = new Task(() => CreateUser(nickname, token2.Token));
+            task2.Start();
+            // If the user presses the cancel button, quit the game creation.
+            if (task1.IsCompleted && task1.Result == DialogResult.Abort)
+            {
+                token2.Cancel();
+                window.Message = "Game creation canceled.";
+                return;
+            }
+            task2.Wait();
 
             // Attempt to join/create a game with the given user token.
-            using (LoadingGame form = new LoadingGame())
+            task2 = new Task(() => JoinGame(duration, token3.Token));
+            task2.Start();
+            // If the user presses the cancel button, quit the game creation.
+            if (task1.IsCompleted && task1.Result == DialogResult.Abort)
             {
-                form.InfoText = "User created successfully.\nNow connecting to game...\n"
-                    + "To cancel operation, click Abort.\nThe window will close upon completion.";
-
-                // TODO Split up the ShowDialog() and JoinGame() into two threads.
-                if (form.ShowDialog() == DialogResult.Abort)
-                {
-                    // TODO Cancel game creation process.
-                }
-
-                JoinGame(form, duration);
+                token3.Cancel();
+                window.Message = "Game creation canceled.";
+                return;
             }
+            task2.Wait();
+
+            // Close the window
+            token1.Cancel();
+
+            Task monitorTask = new Task(() => MonitorGameStatus());
+            monitorTask.Start();
         }
 
         /// <summary>
         /// Private helper method that uses an HttpClient to create a new user
         /// for the Boggle server.
         /// </summary>
-        private void CreateUser(string nickname)
+        private void CreateUser(string nickname, CancellationToken token)
         {
             using (HttpClient client = CreateClient())
             {
@@ -94,7 +127,7 @@ namespace BoggleClient
                 data.Nickname = nickname;
 
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                HttpResponseMessage response = client.PostAsync("/BoggleService.svc/users", content).Result;
+                HttpResponseMessage response = client.PostAsync("/BoggleService.svc/users", content, token).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -117,7 +150,7 @@ namespace BoggleClient
         /// <summary>
         /// Private helper method that uses an HttpClient to join a pending Boggle game.
         /// </summary>
-        private void JoinGame(Form form, int duration)
+        private void JoinGame(int duration, CancellationToken token)
         {
             using (HttpClient client = CreateClient())
             {
@@ -126,17 +159,13 @@ namespace BoggleClient
                 data.TimeLimit = duration;
 
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                HttpResponseMessage response = client.PostAsync("/BoggleService.svc/games", content).Result;
+                HttpResponseMessage response = client.PostAsync("/BoggleService.svc/games", content, token).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     string result = response.Content.ReadAsStringAsync().Result;
                     dynamic newGame = JsonConvert.DeserializeObject(result);
                     gameID = newGame.GameID;
-                    form.Close();
-
-                    //TODO Invoke this method once per second in a new thread.
-                    UpdateGameStatus();
                 }
                 else
                 {
@@ -161,9 +190,20 @@ namespace BoggleClient
         }
 
         /// <summary>
+        /// Private helper method, running in its own thread, that calls UpdateGameStatus()
+        /// with one second intervals between calls.
+        /// </summary>
+        private void MonitorGameStatus()
+        {
+            timer.Elapsed += new ElapsedEventHandler(UpdateGameStatus);
+            timer.Interval = 1000;
+            timer.Enabled = true;
+        }
+
+        /// <summary>
         /// Private helper method that updates the game status, score, etc.
         /// </summary>
-        private string UpdateGameStatus()
+        private void UpdateGameStatus(object source, ElapsedEventArgs e)
         {
             using (HttpClient client = CreateClient())
             {
@@ -177,7 +217,7 @@ namespace BoggleClient
 
                     if (gameState == "pending")
                     {
-                        window.Time = "Game pending...";
+                        window.SetTime("Game pending...");
                     }
                     else if (gameState == "active")
                     {
@@ -200,22 +240,24 @@ namespace BoggleClient
                         window.ShowLetters(letters);
 
                         // Display the time remaining
-                        window.Time = "Time remaining: " + timeLeft;
+                        window.SetTime("Time remaining: " + timeLeft);
 
                         // Display the score
-                        window.Score = player1.Nickname + ": " + player1.Score + "  "
-                            + player2.NickName + ": " + player2.Score;
+                        window.SetScore(player1.Nickname + ": " + player1.Score + "  "
+                            + player2.Nickname + ": " + player2.Score);
                     }
                     else if (gameState == "completed")
                     {
+                        timer.Enabled = false;
+
                         player1 = game.Player1;
                         player2 = game.Player2;
 
                         // Display the final results in a new window
                         using (FinalScore form = new FinalScore())
                         {
-                            form.Player1Name = player1.Name + ": " + player1.Score;
-                            form.Player2Name = player2.Name + ": " + player2.Score;
+                            form.Player1Name = player1.Nickname + ": " + player1.Score;
+                            form.Player2Name = player2.Nickname + ": " + player2.Score;
 
                             string player1Words = "";
                             foreach (dynamic wordPlayed in player1.WordsPlayed)
@@ -252,7 +294,6 @@ namespace BoggleClient
                     }
                 }
             }
-            return gameState;
         }
 
         /// <summary>
@@ -269,18 +310,6 @@ namespace BoggleClient
 
                 StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = client.PutAsync("/BoggleService.svc/games/" + gameID, content).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    UpdateGameStatus();
-                }
-                else
-                {
-                    UpdateGameStatus();
-                    //string str = "Unable to play word: Invalid game ID, user token, or empty word.\n"
-                    //    + "If problem persists, exit game and start over.";
-                    //window.Message = str;
-                }
             }
         }
 
@@ -301,6 +330,7 @@ namespace BoggleClient
 
                     if (resp.IsSuccessStatusCode)
                     {
+                        timer.Enabled = false;
                         window.Message = "Successfully quit pending game.";
                     }
                     else
@@ -311,6 +341,7 @@ namespace BoggleClient
                 }
                 else if (gameState == "active")
                 {
+                    timer.Enabled = false;
                     window = new BoggleGUI();
                 }
             }

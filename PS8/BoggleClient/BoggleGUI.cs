@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BoggleClient
@@ -16,6 +10,7 @@ namespace BoggleClient
 
         // Contains an iterable list of the boggle letter labels.
         private LinkedList<object> letterLabels;
+        delegate void SetTextCallback(string text);
 
         public event Action<string, string, int> NewGameEvent;
         public event Action<string> EnterWordEvent;
@@ -75,28 +70,32 @@ namespace BoggleClient
         /// <summary>
         /// Allows access to the time label for the controller class.
         /// </summary>
-        public string Time
+        public void SetTime(string text)
         {
-            set { timeLabel.Text = value; }
+            if (timeLabel.InvokeRequired)
+            {
+                SetTextCallback d = new SetTextCallback(SetTime);
+                this.Invoke(d, new object[] { text });
+            }
+            else
+            {
+                timeLabel.Text = text;
+            }
         }
 
         /// <summary>
         /// Allows access to the score label for the controller class.
         /// </summary>
-        public string Score
+        public void SetScore(string text)
         {
-            set { scoreLabel.Text = value; }
-        }
-
-        /// <summary>
-        /// Displays a window at the end of the game with the score breakdown,
-        /// and listing the words entered by both players.
-        /// </summary>
-        public string WordsGuessed
-        {
-            set
+            if (scoreLabel.InvokeRequired)
             {
-                // TODO Create a popup window with the requisite information.
+                SetTextCallback d = new SetTextCallback(SetScore);
+                this.Invoke(d, new object[] { text });
+            }
+            else
+            {
+                scoreLabel.Text = text;
             }
         }
 
