@@ -11,6 +11,7 @@ namespace BoggleClient
         // Contains an iterable list of the boggle letter labels.
         private LinkedList<object> letterLabels;
         delegate void SetTextCallback(string text);
+        delegate void SetLabelsCallback(LinkedList<string> text);
 
         public event Action<string, string, int> NewGameEvent;
         public event Action<string> EnterWordEvent;
@@ -91,7 +92,7 @@ namespace BoggleClient
             if (scoreLabel.InvokeRequired)
             {
                 SetTextCallback d = new SetTextCallback(SetScore);
-                this.Invoke(d, new object[] { text });
+                this.Invoke(d, text);
             }
             else
             {
@@ -132,14 +133,45 @@ namespace BoggleClient
         /// </summary>
         public void ShowLetters(LinkedList<string> list)
         {
-            LinkedListNode<string> node = list.First;
-            LinkedListNode<object> label = letterLabels.First;
-            ((Label)label.Value).Text = node.Value;
-            for (int j = 2; j <= 16; j++)
+            if (label1.InvokeRequired)
             {
+                SetLabelsCallback d = new SetLabelsCallback(ShowLetters);
+                this.Invoke(d, list);
+            }
+            else
+            {
+                LinkedListNode<string> node = list.First;
+                label1.Text = node.Value;
                 node = node.Next;
-                label = label.Next;
-                ((Label)label.Value).Text = node.Value;
+                label2.Text = node.Value;
+                node = node.Next;
+                label3.Text = node.Value;
+                node = node.Next;
+                label4.Text = node.Value;
+                node = node.Next;
+                label5.Text = node.Value;
+                node = node.Next;
+                label6.Text = node.Value;
+                node = node.Next;
+                label7.Text = node.Value;
+                node = node.Next;
+                label8.Text = node.Value;
+                node = node.Next;
+                label9.Text = node.Value;
+                node = node.Next;
+                label10.Text = node.Value;
+                node = node.Next;
+                label11.Text = node.Value;
+                node = node.Next;
+                label12.Text = node.Value;
+                node = node.Next;
+                label13.Text = node.Value;
+                node = node.Next;
+                label14.Text = node.Value;
+                node = node.Next;
+                label15.Text = node.Value;
+                node = node.Next;
+                label16.Text = node.Value;
             }
         }
 

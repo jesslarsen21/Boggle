@@ -243,8 +243,9 @@ namespace BoggleClient
                         window.SetTime("Time remaining: " + timeLeft);
 
                         // Display the score
-                        window.SetScore(player1.Nickname + ": " + player1.Score + "  "
-                            + player2.Nickname + ": " + player2.Score);
+                        string score = player1.Nickname + ": " + player1.Score + "  "
+                            + player2.Nickname + ": " + player2.Score;
+                        window.SetScore(score);
                     }
                     else if (gameState == "completed")
                     {
