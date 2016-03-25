@@ -4,19 +4,26 @@ using System.Windows.Forms;
 
 namespace BoggleClient
 {
+    /// <summary>
+    /// GUI for a program to play a remote game of Boggle.
+    /// </summary>
     public partial class BoggleGUI : Form, IBoggleView
     {
-        // TODO Trigger each action in a new task, so that the GUI can remain responsive.
-
         // Contains an iterable list of the boggle letter labels.
         private LinkedList<object> letterLabels;
+        // Allows for access to the SetText method from another thread, via this.Invoke
         delegate void SetTextCallback(string text);
+        // Allows for access to the SetLabels method from another thread, via this.Invoke
         delegate void SetLabelsCallback(LinkedList<string> text);
 
+        // See IBoggleView.cs for details about these actions.
         public event Action<string, string, int> NewGameEvent;
         public event Action<string> EnterWordEvent;
         public event Action QuitGameEvent;
 
+        /// <summary>
+        /// Instantiates a new GUI window, and sets up the Controller.
+        /// </summary>
         public BoggleGUI()
         {
             InitializeComponent();
@@ -205,6 +212,9 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// Handles the Help button press event.
+        /// </summary>
         private void helpButton_Click(object sender, EventArgs e)
         {
             string str = "Controls:\n"
