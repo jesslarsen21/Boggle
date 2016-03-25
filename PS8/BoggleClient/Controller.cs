@@ -67,49 +67,24 @@ namespace BoggleClient
         private void Window_NewGameEvent(string domain, string nickname, int duration)
         {
             serverDomain = domain;
-            CancellationTokenSource token1 = new CancellationTokenSource();
-            CancellationTokenSource token2 = new CancellationTokenSource();
-            CancellationTokenSource token3 = new CancellationTokenSource();
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
             LoadingGame form = new LoadingGame();
             form.InfoText = "Creating user ID and connecting to game...\n"
                 + "To cancel operation, click Abort.\nThe window will close upon completion.";
-            Task<DialogResult> task1 = new Task<DialogResult>(() => form.ShowDialog(), token1.Token);
-            task1.Start();
 
-            // If the user presses the cancel button, quit the game creation.
-            if (task1.IsCompleted && task1.Result == DialogResult.Abort)
+            Task task = new Task(() =>
             {
-                token1.Cancel();
-                window.Message = "Game creation canceled.";
+                CreateUser(nickname, tokenSource.Token);
+                JoinGame(duration, tokenSource.Token);
+                form.DoClose();
+            });
+            task.Start();
+
+            if (form.ShowDialog() == DialogResult.Abort)
+            {
+                tokenSource.Cancel();
                 return;
             }
-
-            // Create a new user, with the given nickname.
-            Task task2 = new Task(() => CreateUser(nickname, token2.Token));
-            task2.Start();
-            // If the user presses the cancel button, quit the game creation.
-            if (task1.IsCompleted && task1.Result == DialogResult.Abort)
-            {
-                token2.Cancel();
-                window.Message = "Game creation canceled.";
-                return;
-            }
-            task2.Wait();
-
-            // Attempt to join/create a game with the given user token.
-            task2 = new Task(() => JoinGame(duration, token3.Token));
-            task2.Start();
-            // If the user presses the cancel button, quit the game creation.
-            if (task1.IsCompleted && task1.Result == DialogResult.Abort)
-            {
-                token3.Cancel();
-                window.Message = "Game creation canceled.";
-                return;
-            }
-            task2.Wait();
-
-            // Close the window
-            form.DoClose();
 
             Task monitorTask = new Task(() => MonitorGameStatus());
             monitorTask.Start();
@@ -121,6 +96,10 @@ namespace BoggleClient
         /// </summary>
         private void CreateUser(string nickname, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
             using (HttpClient client = CreateClient())
             {
                 dynamic data = new ExpandoObject();
@@ -152,40 +131,48 @@ namespace BoggleClient
         /// </summary>
         private void JoinGame(int duration, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
             using (HttpClient client = CreateClient())
             {
-                dynamic data = new ExpandoObject();
-                data.UserToken = userToken;
-                data.TimeLimit = duration;
-
-                StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                HttpResponseMessage response = client.PostAsync("/BoggleService.svc/games", content, token).Result;
-
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    string result = response.Content.ReadAsStringAsync().Result;
-                    dynamic newGame = JsonConvert.DeserializeObject(result);
-                    gameID = newGame.GameID;
-                }
-                else
-                {
-                    string str = "";
-                    if (response.StatusCode == HttpStatusCode.Forbidden)
+                    dynamic data = new ExpandoObject();
+                    data.UserToken = userToken;
+                    data.TimeLimit = duration;
+
+                    StringContent content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = client.PostAsync("/BoggleService.svc/games", content, token).Result;
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        str = "Unable to join: Invalid user token or game duration. "
-                            + "Game duration must be >= 5 and <= 120.\n"
-                            + "Press OK to enter info again, or press Cancel to cancel game creation.";
+                        string result = response.Content.ReadAsStringAsync().Result;
+                        dynamic newGame = JsonConvert.DeserializeObject(result);
+                        gameID = newGame.GameID;
                     }
                     else
                     {
-                        str = "Unable to join: This user token already in pending game.\n"
-                            + "Press OK to enter info again, or press Cancel to cancel game creation.";
-                    }
-                    if (window.Error(str) == DialogResult.OK)
-                    {
-                        window = new BoggleGUI();
+                        string str = "";
+                        if (response.StatusCode == HttpStatusCode.Forbidden)
+                        {
+                            str = "Unable to join: Invalid user token or game duration. "
+                                + "Game duration must be >= 5 and <= 120.\n"
+                                + "Press OK to enter info again, or press Cancel to cancel game creation.";
+                        }
+                        else
+                        {
+                            str = "Unable to join: This user token already in pending game.\n"
+                                + "Press OK to enter info again, or press Cancel to cancel game creation.";
+                        }
+                        if (window.Error(str) == DialogResult.OK)
+                        {
+                            window = new BoggleGUI();
+                        }
                     }
                 }
+                catch (AggregateException) { }
             }
         }
 
@@ -332,6 +319,7 @@ namespace BoggleClient
                     if (resp.IsSuccessStatusCode)
                     {
                         timer.Enabled = false;
+                        window.SetTime("");
                         window.Message = "Successfully quit pending game.";
                     }
                     else
@@ -343,6 +331,7 @@ namespace BoggleClient
                 else if (gameState == "active")
                 {
                     timer.Enabled = false;
+                    window.DoClose();
                     window = new BoggleGUI();
                 }
             }

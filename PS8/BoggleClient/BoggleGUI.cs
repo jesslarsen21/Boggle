@@ -105,7 +105,13 @@ namespace BoggleClient
         /// </summary>
         public void DoClose()
         {
-            Close();
+            if (InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate
+                {
+                    Close();
+                });
+            }
         }
 
         /// <summary>

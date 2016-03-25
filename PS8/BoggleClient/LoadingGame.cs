@@ -22,10 +22,13 @@ namespace BoggleClient
 
         public void DoClose()
         {
-            Invoke((MethodInvoker) delegate
-               {
-                   Close();
-               });
+            if (InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate
+                  {
+                      Close();
+                  });
+            }
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
