@@ -9,6 +9,9 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        private Dictionary<string, Game> games = new Dictionary<string, Game>();
+        private Dictionary<string, User> users = new Dictionary<string, User>();
+
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
         /// an http response is sent.
@@ -30,37 +33,29 @@ namespace Boggle
             return File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "index.html");
         }
 
-        /// <summary>
-        /// Demo.  You can delete this.
-        /// </summary>
-        public int GetFirst(IList<int> list)
+        public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
-            SetStatus(OK);
-            return list[0];
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Demo.  You can delete this.
-        /// </summary>
-        /// <returns></returns>
-        public IList<int> Numbers(string n)
+        public CreateUserReturn CreateUser(CreateUserInfo user)
         {
-            int index;
-            if (!Int32.TryParse(n, out index) || index < 0)
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-            else
-            {
-                List<int> list = new List<int>();
-                for (int i = 0; i < index; i++)
-                {
-                    list.Add(i);
-                }
-                SetStatus(OK);
-                return list;
-            }
+            throw new NotImplementedException();
+        }
+
+        public Game GameStatus(GameStatusInfo info, string gameID)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JoinGameReturn JoinGame(JoinGameInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PlayWordReturn PlayWord(PlayWordInfo info, string gameID)
+        {
+            throw new NotImplementedException();
         }
     }
 }
