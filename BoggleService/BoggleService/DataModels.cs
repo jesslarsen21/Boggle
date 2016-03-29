@@ -65,6 +65,9 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public User Player2 { get; set; }
 
+        [DataMember(EmitDefaultValue = false)]
+        public string GameID { get; set; }
+
         public Game GetBrief()
         {
             Game output = new Game();

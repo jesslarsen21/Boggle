@@ -9,8 +9,20 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
-        private Dictionary<string, Game> games = new Dictionary<string, Game>();
-        private Dictionary<string, User> users = new Dictionary<string, User>();
+        private Dictionary<string, Game> games;
+        private Dictionary<string, User> users;
+        private Game pendingGame;
+        private int gameCounter;
+
+        public BoggleService()
+        {
+            games = new Dictionary<string, Game>();
+            users = new Dictionary<string, User>();
+            pendingGame = new Game();
+            pendingGame.GameState = "pending";
+            gameCounter = 1;
+            games.Add(gameCounter.ToString(), pendingGame);
+        }
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -69,7 +81,62 @@ namespace Boggle
         /// </summary>
         public JoinGameReturn JoinGame(JoinGameInfo info)
         {
-            throw new NotImplementedException();
+            User user;
+            if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit < 5 && info.TimeLimit > 120)
+            {
+                // If there is already one player in the pending game
+                if (pendingGame.Player1 != null)
+                {
+                    // Convert the pending game to an active one
+                    Game activeGame = new Game();
+                    activeGame.Player1 = pendingGame.Player1;
+                    activeGame.TimeLimit = pendingGame.TimeLimit;
+                    activeGame.GameState = "active";
+                    games.Remove(pendingGame.GameID);
+                    activeGame.GameID = pendingGame.GameID;
+                    games.Add(activeGame.GameID, activeGame);
+
+                    // Add the second user and average the time limit
+                    user.Score = 0;
+                    user.WordsPlayed = new List<Words>();
+                    activeGame.Player2 = user;
+                    activeGame.TimeLimit = (activeGame.TimeLimit + info.TimeLimit) / 2;
+                    activeGame.TimeLeft = activeGame.TimeLimit;
+
+                    // Create a new pending game
+                    gameCounter++;
+                    pendingGame = new Game();
+                    pendingGame.GameState = "pending";
+                    pendingGame.GameID = gameCounter.ToString();
+                    games.Add(pendingGame.GameID, pendingGame);
+
+                    // Return info to user
+                    JoinGameReturn output = new JoinGameReturn();
+                    output.GameID = activeGame.GameID;
+                    SetStatus(HttpStatusCode.Created);
+                    return output;
+                }
+                // If this is the first player in the pending game
+                else
+                {
+                    // Add the first user and set the time limit
+                    user.Score = 0;
+                    user.WordsPlayed = new List<Words>();
+                    pendingGame.Player1 = user;
+                    pendingGame.TimeLimit = info.TimeLimit;
+
+                    // Return info to user
+                    JoinGameReturn output = new JoinGameReturn();
+                    output.GameID = pendingGame.GameID;
+                    SetStatus(HttpStatusCode.Accepted);
+                    return output;
+                }
+            }
+            else
+            {
+                SetStatus(HttpStatusCode.Forbidden);
+                return null;
+            }
         }
 
         /// <summary>
