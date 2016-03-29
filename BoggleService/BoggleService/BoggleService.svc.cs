@@ -79,7 +79,7 @@ namespace Boggle
         /// and the TimeLimit as the pending game's requested time limit.
         /// Returns the pending game's GameID. Responds with status 202 (Accepted).
         /// </summary>
-        public JoinGameReturn JoinGame(JoinGameInfo info)
+        public JoinGameReturn JoinGame (JoinGameInfo info)
         {
             User user;
             if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit < 5 && info.TimeLimit > 120)
