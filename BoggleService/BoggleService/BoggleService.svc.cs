@@ -120,9 +120,41 @@ namespace Boggle
         /// 
         /// Note: The Board and Words are not case sensitive.
         /// </summary>
-        public Game GameStatus(GameStatusInfo info, string gameID)
+        public Game GameStatus (GameStatusInfo info, string gameID)
         {
-            throw new NotImplementedException();
+            Game game;
+            if (games.TryGetValue(gameID, out game))
+            {
+                // If the game is pending
+                if (game.GameState == "pending")
+                {
+                    SetStatus(HttpStatusCode.OK);
+                    return game.GetPending();
+                }
+                // If the game is active or completed and Brief == "yes"
+                else if (info.Brief != null && info.Brief.ToLower() == "yes")
+                {
+                    SetStatus(HttpStatusCode.OK);
+                    return game.GetBrief();
+                }
+                // Otherwise, if the game is active
+                else if (game.GameState == "active")
+                {
+                    SetStatus(HttpStatusCode.OK);
+                    return game.GetActive();
+                }
+                // Otherwise, if the game is completed
+                else
+                {
+                    SetStatus(HttpStatusCode.OK);
+                    return game;
+                }
+            }
+            else
+            {
+                SetStatus(HttpStatusCode.Forbidden);
+                return null;
+            }
         }
     }
 }

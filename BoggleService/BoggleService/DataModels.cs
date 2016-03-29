@@ -27,6 +27,14 @@ namespace Boggle
             output.Score = Score;
             return output;
         }
+
+        public User GetActive()
+        {
+            User output = new User();
+            output.Nickname = Nickname;
+            output.Score = Score;
+            return output;
+        }
     }
 
     public class Words
@@ -64,6 +72,25 @@ namespace Boggle
             output.TimeLeft = TimeLeft;
             output.Player1 = Player1.GetBrief();
             output.Player2 = Player2.GetBrief();
+            return output;
+        }
+
+        public Game GetActive()
+        {
+            Game output = new Game();
+            output.GameState = GameState;
+            output.Board = Board;
+            output.TimeLimit = TimeLimit;
+            output.TimeLeft = TimeLeft;
+            output.Player1 = Player1.GetActive();
+            output.Player2 = Player2.GetActive();
+            return output;
+        }
+
+        public Game GetPending()
+        {
+            Game output = new Game();
+            output.GameState = "pending";
             return output;
         }
 
