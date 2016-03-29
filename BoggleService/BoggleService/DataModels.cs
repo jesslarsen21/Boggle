@@ -32,6 +32,7 @@ namespace Boggle
     public class Words
     {
         public string Word { get; set; }
+
         public int Score { get; set; }
     }
 
@@ -65,6 +66,8 @@ namespace Boggle
             output.Player2 = Player2.GetBrief();
             return output;
         }
+
+        private DateTime StartTime { get; set; }
     }
 
     public class CreateUserInfo
@@ -85,6 +88,7 @@ namespace Boggle
     public class JoinGameInfo
     {
         public string UserToken { get; set; }
+
         public int TimeLimit { get; set; }
     }
 
@@ -96,6 +100,7 @@ namespace Boggle
     public class PlayWordInfo
     {
         public string UserToken { get; set; }
+
         public string Word { get; set; }
     }
 
