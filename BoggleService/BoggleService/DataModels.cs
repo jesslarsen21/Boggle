@@ -94,7 +94,8 @@ namespace Boggle
             return output;
         }
 
-        private DateTime StartTime { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public DateTime StartTime { get; set; }
     }
 
     public class CreateUserInfo

@@ -134,18 +134,53 @@ namespace Boggle
                 // If the game is active or completed and Brief == "yes"
                 else if (info.Brief != null && info.Brief.ToLower() == "yes")
                 {
+                    // Update game.TimeLeft
+                    if (game.GameState == "active")
+                    {
+                        DateTime time = DateTime.UtcNow;
+                        game.TimeLeft -= (int)time.Subtract(game.StartTime).TotalSeconds;
+                        // If the time is up, end the game.
+                        if (game.TimeLeft <= 0)
+                        {
+                            game.GameState = "completed";
+                            game.TimeLeft = 0;
+                        }
+                    }
+                    else
+                    {
+                        game.TimeLeft = 0;
+                    }
                     SetStatus(HttpStatusCode.OK);
                     return game.GetBrief();
                 }
                 // Otherwise, if the game is active
                 else if (game.GameState == "active")
                 {
+                    // Update game.TimeLeft
+                    if (game.GameState == "active")
+                    {
+                        DateTime time = DateTime.UtcNow;
+                        game.TimeLeft -= (int)time.Subtract(game.StartTime).TotalSeconds;
+                        // If the time is up, end the game.
+                        if (game.TimeLeft <= 0)
+                        {
+                            game.GameState = "completed";
+                            game.TimeLeft = 0;
+                            SetStatus(HttpStatusCode.OK);
+                            return game;
+                        }
+                    }
+                    else
+                    {
+                        game.TimeLeft = 0;
+                    }
                     SetStatus(HttpStatusCode.OK);
                     return game.GetActive();
                 }
                 // Otherwise, if the game is completed
                 else
                 {
+                    game.TimeLeft = 0;
                     SetStatus(HttpStatusCode.OK);
                     return game;
                 }
