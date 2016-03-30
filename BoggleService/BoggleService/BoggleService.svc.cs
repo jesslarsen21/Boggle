@@ -12,21 +12,10 @@ namespace Boggle
         private Dictionary<string, Game> games = new Dictionary<string, Game>();
         private Dictionary<string, User> users = new Dictionary<string, User>();
 
-
-        /// <summary>
-        /// keep track of pending game. If one requests to start a game, if there is a 
-        /// game sitting in pending Game, add the player to that game, and set pending 
-        /// game back to null. If one requests to start a game, and there is not game
-        /// sitting in pending game (pendingGame==null), then add a new game to 
-        /// pendingGame. 
-        /// </summary>
-        private Game pendingGame = null;
-
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
         /// an http response is sent.
         /// </summary>
-        /// <param name="status"></param>
         private static void SetStatus(HttpStatusCode status)
         {
             WebOperationContext.Current.OutgoingResponse.StatusCode = status;
@@ -35,7 +24,6 @@ namespace Boggle
         /// <summary>
         /// Returns a Stream version of index.html.
         /// </summary>
-        /// <returns></returns>
         public Stream API()
         {
             SetStatus(OK);
@@ -43,92 +31,96 @@ namespace Boggle
             return File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "index.html");
         }
 
+        /// <summary>
+        /// Create a new user.
+        /// 
+        /// If Nickname is null, or is empty when trimmed, responds with
+        /// status 403 (Forbidden).
+        /// 
+        /// Otherwise, creates a new user with a unique UserToken and the
+        /// trimmed Nickname. The returned UserToken should be used to identify
+        /// the user in subsequent requests. Responds with status 201 (Created).
+        /// </summary>
+        public CreateUserReturn CreateUser(CreateUserInfo user)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Join a game.
+        /// 
+        /// If UserToken is invalid, TimeLimit< 5, or TimeLimit> 120,
+        /// responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, if UserToken is already a player in the pending game,
+        /// responds with status 409 (Conflict).
+        /// 
+        /// Otherwise, if there is already one player in the pending game,
+        /// adds UserToken as the second player. The pending game becomes active
+        /// and a new pending game with no players is created. The active game's
+        /// time limit is the integer average of the time limits requested
+        /// by the two players. Returns the new active game's GameID
+        /// (which should be the same as the old pending game's GameID).
+        /// Responds with status 201 (Created).
+        /// 
+        /// Otherwise, adds UserToken as the first player of the pending game,
+        /// and the TimeLimit as the pending game's requested time limit.
+        /// Returns the pending game's GameID. Responds with status 202 (Accepted).
+        /// </summary>
+        public JoinGameReturn JoinGame(JoinGameInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Cancel a pending request to join a game.
+        /// 
+        /// If UserToken is invalid or is not a player in the pending game,
+        /// responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, removes UserToken from the pending game and responds
+        /// with status 200 (OK).
+        /// </summary>
         public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
+        /// Play a word in a game.
         /// 
+        /// If Word is null or empty when trimmed, or if GameID or UserToken
+        /// is missing or invalid, or if UserToken is not a player in the game
+        /// identified by GameID, responds with response code 403 (Forbidden).
+        /// 
+        /// Otherwise, if the game state is anything other than "active",
+        /// responds with response code 409 (Conflict).
+        /// 
+        /// Otherwise, records the trimmed Word as being played by UserToken
+        /// in the game identified by GameID. Returns the score for Word
+        /// in the context of the game (e.g. if Word has been played before
+        /// the score is zero). Responds with status 200 (OK).
+        /// 
+        /// Note: The word is not case sensitive.
         /// </summary>
-        public CreateUserReturn CreateUser(CreateUserInfo user)
-        {
-            if (user.Nickname == null || user == null || user.Nickname.Trim().Length == 0)
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-            else
-            {
-                string Token = Guid.NewGuid().ToString();
-                CreateUserReturn newUser = new CreateUserReturn();
-                newUser.UserToken = Token;
-
-                User tmpUser = new User();
-                tmpUser.Nickname = user.Nickname;
-                tmpUser.UserToken = Token;
-                users.Add(Token, tmpUser);
-
-                SetStatus(Created);
-
-                return newUser;
-            }
-        }
-
-        public Game GameStatus(GameStatusInfo info, string gameID)
+        public PlayWordReturn PlayWord(PlayWordInfo info, string gameID)
         {
             throw new NotImplementedException();
         }
 
-        public JoinGameReturn JoinGame(JoinGameInfo info)
-        {
-            if (!users.ContainsKey(info.UserToken) || (info.TimeLimit < 5 || info.TimeLimit > 120) )
-            {
-                SetStatus(Forbidden);
-                return null;
-            }
-
-            if(pendingGame != null && pendingGame.Player1.UserToken == info.UserToken)
-            {
-                SetStatus(Conflict);
-                return null;
-            }
-
-            if (pendingGame == null)
-            {
-                //there is no pending game, so we much create one
-                Game tmpGame = new Game();
-                tmpGame.Player1 = users[info.UserToken];
-                tmpGame.GameState = "pending";
-                tmpGame.GameID = games.Count + 1;
-                tmpGame.TimeLimit = info.TimeLimit;
-
-                //user is player 1
-                SetStatus(Accepted);
-                JoinGameReturn returnGame = new JoinGameReturn();
-                returnGame.GameID = tmpGame.GameID.ToString();
-            }
-            else
-            {
-                //There is already a pending game that has a player 1, a time limit, and a game id. The state is pending.
-                Game tmpGame = new Game();
-                tmpGame.Player1 = pendingGame.Player1;
-                tmpGame.GameID = pendingGame.GameID;
-                int average = (info.TimeLimit + pendingGame.TimeLimit) / 2;
-                tmpGame.TimeLimit = average;
-                tmpGame.Player2 = users[info.UserToken];
-                //time in miliseconds.
-                int ms = Convert.ToInt32((DateTime.Now - DateTime.MinValue).TotalMilliseconds);
-
-
-                //status set to created, user is player two, returning pendingGame GameID.
-                SetStatus(Created);
-                JoinGameReturn returnGame = new JoinGameReturn();
-                returnGame.GameID = pendingGame.GameID.ToString();
-            }
-        }
-
-        public PlayWordReturn PlayWord(PlayWordInfo info, string gameID)
+        /// <summary>
+        /// Get game status information.
+        /// 
+        /// If GameID is invalid, responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, returns information about the game named by GameID
+        /// as discussed below. Note that the information returned depends on
+        /// whether "Brief=yes" was included as a parameter as well as on
+        /// the state of the game. Responds with status code 200 (OK).
+        /// 
+        /// Note: The Board and Words are not case sensitive.
+        /// </summary>
+        public Game GameStatus(GameStatusInfo info, string gameID)
         {
             throw new NotImplementedException();
         }
