@@ -13,13 +13,7 @@ namespace Boggle
         private static readonly Dictionary<string, User> users = new Dictionary<string, User>();
         private static Game pendingGame = new Game();
         private static int gameCounter;
-
-        public BoggleService()
-        {
-            pendingGame.GameState = "pending";
-            gameCounter = 1;
-            games.Add(gameCounter.ToString(), pendingGame);
-        }
+        private static bool firstConstruction = true;
 
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
@@ -52,6 +46,14 @@ namespace Boggle
         /// </summary>
         public CreateUserReturn CreateUser(CreateUserInfo user)
         {
+            if (firstConstruction)
+            {
+                pendingGame.GameState = "pending";
+                gameCounter = 1;
+                games.Add(gameCounter.ToString(), pendingGame);
+                firstConstruction = false;
+            }
+
             if (user == null || user.Nickname == null || user.Nickname.Trim().Length == 0)
             {
                 SetStatus(Forbidden);
@@ -100,9 +102,19 @@ namespace Boggle
             User user;
             if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit > 5 && info.TimeLimit < 120)
             {
+                if (pendingGame.GameID == null)
+                {
+                    pendingGame.GameID = gameCounter.ToString();
+                }
                 // If there is already one player in the pending game
                 if (pendingGame.Player1 != null)
                 {
+                    if (pendingGame.Player1.UserToken == info.UserToken)
+                    {
+                        SetStatus(Conflict);
+                        return null;
+                    }
+
                     // Convert the pending game to an active one
                     Game activeGame = new Game();
                     activeGame.Player1 = pendingGame.Player1;
@@ -167,7 +179,7 @@ namespace Boggle
         public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
             User tmpUser;
-            if (user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || user.UserToken != pendingGame.Player1.UserToken)
+            if (user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || pendingGame.Player1 == null || user.UserToken != pendingGame.Player1.UserToken)
             {
                 SetStatus(Forbidden);
             }
