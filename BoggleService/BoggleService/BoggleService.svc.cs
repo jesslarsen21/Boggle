@@ -132,7 +132,7 @@ namespace Boggle
                     // Return info to user
                     JoinGameReturn output = new JoinGameReturn();
                     output.GameID = activeGame.GameID;
-                    SetStatus(HttpStatusCode.Created);
+                    SetStatus(Created);
                     return output;
                 }
                 // If this is the first player in the pending game
@@ -147,13 +147,13 @@ namespace Boggle
                     // Return info to user
                     JoinGameReturn output = new JoinGameReturn();
                     output.GameID = pendingGame.GameID;
-                    SetStatus(HttpStatusCode.Accepted);
+                    SetStatus(Accepted);
                     return output;
                 }
             }
             else
             {
-                SetStatus(HttpStatusCode.Forbidden);
+                SetStatus(Forbidden);
                 return null;
             }
         }
@@ -214,7 +214,7 @@ namespace Boggle
                 // If the game is pending
                 if (game.GameState == "pending")
                 {
-                    SetStatus(HttpStatusCode.OK);
+                    SetStatus(OK);
                     return game.GetPending();
                 }
                 // If the game is active or completed and Brief == "yes"
@@ -236,7 +236,7 @@ namespace Boggle
                     {
                         game.TimeLeft = 0;
                     }
-                    SetStatus(HttpStatusCode.OK);
+                    SetStatus(OK);
                     return game.GetBrief();
                 }
                 // Otherwise, if the game is active
@@ -252,7 +252,7 @@ namespace Boggle
                         {
                             game.GameState = "completed";
                             game.TimeLeft = 0;
-                            SetStatus(HttpStatusCode.OK);
+                            SetStatus(OK);
                             return game;
                         }
                     }
@@ -260,20 +260,20 @@ namespace Boggle
                     {
                         game.TimeLeft = 0;
                     }
-                    SetStatus(HttpStatusCode.OK);
+                    SetStatus(OK);
                     return game.GetActive();
                 }
                 // Otherwise, if the game is completed
                 else
                 {
                     game.TimeLeft = 0;
-                    SetStatus(HttpStatusCode.OK);
+                    SetStatus(OK);
                     return game;
                 }
             }
             else
             {
-                SetStatus(HttpStatusCode.Forbidden);
+                SetStatus(Forbidden);
                 return null;
             }
         }
