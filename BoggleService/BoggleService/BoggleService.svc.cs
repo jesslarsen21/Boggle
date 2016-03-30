@@ -101,7 +101,7 @@ namespace Boggle
         public JoinGameReturn JoinGame (JoinGameInfo info)
         {
             User user;
-            if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit < 5 && info.TimeLimit > 120)
+            if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit > 5 && info.TimeLimit < 120)
             {
                 // If there is already one player in the pending game
                 if (pendingGame.Player1 != null)
@@ -169,7 +169,23 @@ namespace Boggle
         /// </summary>
         public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
-            throw new NotImplementedException();
+            User tmpUser;
+            if(user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || user.UserToken != pendingGame.Player1.UserToken)
+            {
+                SetStatus(Forbidden);
+            }
+            else
+            {
+                string id = pendingGame.GameID;
+                games.Remove(id);
+
+                pendingGame = new Game();
+                pendingGame.GameState = "pending";
+                pendingGame.GameID = id;
+                games.Add(pendingGame.GameID, pendingGame);
+                
+                SetStatus(OK);
+            }
         }
 
         /// <summary>
