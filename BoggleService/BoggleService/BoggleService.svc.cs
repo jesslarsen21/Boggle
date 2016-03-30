@@ -55,7 +55,26 @@ namespace Boggle
         /// </summary>
         public CreateUserReturn CreateUser(CreateUserInfo user)
         {
-            throw new NotImplementedException();
+            if (user.Nickname == null || user == null || user.Nickname.Trim().Length == 0)
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            else
+            {
+                string Token = Guid.NewGuid().ToString();
+                CreateUserReturn newUser = new CreateUserReturn();
+                newUser.UserToken = Token;
+
+                User tmpUser = new User();
+                tmpUser.Nickname = user.Nickname;
+                tmpUser.UserToken = Token;
+                users.Add(Token, tmpUser);
+
+                SetStatus(Created);
+
+                return newUser;
+            }
         }
 
         /// <summary>
