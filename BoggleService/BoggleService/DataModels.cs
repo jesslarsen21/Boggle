@@ -51,6 +51,8 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public string Board { get; set; }
 
+        public BoggleBoard internalBoard { get; set; }
+
         [DataMember(EmitDefaultValue = false)]
         public int TimeLimit { get; set; }
 

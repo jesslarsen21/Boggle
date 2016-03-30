@@ -98,7 +98,7 @@ namespace Boggle
         /// and the TimeLimit as the pending game's requested time limit.
         /// Returns the pending game's GameID. Responds with status 202 (Accepted).
         /// </summary>
-        public JoinGameReturn JoinGame (JoinGameInfo info)
+        public JoinGameReturn JoinGame(JoinGameInfo info)
         {
             User user;
             if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit > 5 && info.TimeLimit < 120)
@@ -170,7 +170,7 @@ namespace Boggle
         public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
             User tmpUser;
-            if(user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || user.UserToken != pendingGame.Player1.UserToken)
+            if (user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || user.UserToken != pendingGame.Player1.UserToken)
             {
                 SetStatus(Forbidden);
             }
@@ -183,7 +183,7 @@ namespace Boggle
                 pendingGame.GameState = "pending";
                 pendingGame.GameID = id;
                 games.Add(pendingGame.GameID, pendingGame);
-                
+
                 SetStatus(OK);
             }
         }
@@ -207,7 +207,85 @@ namespace Boggle
         /// </summary>
         public PlayWordReturn PlayWord(PlayWordInfo info, string gameID)
         {
-            throw new NotImplementedException();
+            Game currGame;
+            User currUser;
+            Words tmpWord = new Words();
+            PlayWordReturn wordReturn = new PlayWordReturn();
+            if (info.Word == null || info.UserToken == null || gameID == null || info.Word.Trim().Length == 0 ||
+               !users.TryGetValue(info.UserToken, out currUser) || !games.TryGetValue(gameID, out currGame) ||
+               (currGame.Player1.UserToken != info.UserToken && currGame.Player2.UserToken != info.UserToken))
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            else if (currGame.GameState != "active")
+            {
+                SetStatus(Conflict);
+                return null;
+            }
+            string word = info.Word.Trim();
+            tmpWord.Word = word;
+            if (currGame.internalBoard.CanBeFormed(word))
+            {
+                foreach (string line in File.ReadLines("dictionary.txt"))
+                {
+                    if (line.Contains(word))
+                    {
+                        
+                        if (word.Length == 3 || word.Length == 4)
+                        {
+                            tmpWord.Score = 1;
+                            wordReturn.Score = "1";
+                        }
+                        else if (word.Length == 5)
+                        {
+                            tmpWord.Score = 2;
+                            wordReturn.Score = "2";
+                        }
+                        else if (word.Length == 6)
+                        {
+                            tmpWord.Score = 3;
+                            wordReturn.Score = "3";
+                        }
+                        else if (word.Length == 7)
+                        {
+                            tmpWord.Score = 5;
+                            wordReturn.Score = "5";
+                        }
+                        else
+                        {
+                            tmpWord.Score = 11;
+                            wordReturn.Score = "11";
+                        }
+
+                        if (currGame.Player1.UserToken == info.UserToken)
+                        {
+                            currGame.Player1.WordsPlayed.Add(tmpWord);
+                        }
+                        else
+                        {
+                            currGame.Player2.WordsPlayed.Add(tmpWord);
+                        }
+
+                        SetStatus(OK);
+                        return wordReturn;
+                    }
+                }
+            }
+
+            tmpWord.Score = -1;
+            if (currGame.Player1.UserToken == info.UserToken)
+            {
+                currGame.Player1.WordsPlayed.Add(tmpWord);
+            }
+            else
+            {
+                currGame.Player2.WordsPlayed.Add(tmpWord);
+            }
+            wordReturn.Score = "-1";
+            SetStatus(OK);
+            return wordReturn;
+
         }
 
         /// <summary>
@@ -222,7 +300,7 @@ namespace Boggle
         /// 
         /// Note: The Board and Words are not case sensitive.
         /// </summary>
-        public Game GameStatus (GameStatusInfo info, string gameID)
+        public Game GameStatus(GameStatusInfo info, string gameID)
         {
             Game game;
             if (games.TryGetValue(gameID, out game))
