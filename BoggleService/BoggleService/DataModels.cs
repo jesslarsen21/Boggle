@@ -128,20 +128,8 @@ namespace Boggle
         public string GameID { get; set; }
     }
 
-    public class PlayWordInfo
-    {
-        public string UserToken { get; set; }
-
-        public string Word { get; set; }
-    }
-
     public class PlayWordReturn
     {
         public string Score { get; set; }
-    }
-
-    public class GameStatusInfo
-    {
-        public string Brief { get; set; }
     }
 }

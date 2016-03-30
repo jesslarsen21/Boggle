@@ -9,16 +9,13 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
-        private Dictionary<string, Game> games;
-        private Dictionary<string, User> users;
-        private Game pendingGame;
-        private int gameCounter;
+        private static readonly Dictionary<string, Game> games = new Dictionary<string, Game>();
+        private static readonly Dictionary<string, User> users = new Dictionary<string, User>();
+        private static Game pendingGame = new Game();
+        private static int gameCounter;
 
         public BoggleService()
         {
-            games = new Dictionary<string, Game>();
-            users = new Dictionary<string, User>();
-            pendingGame = new Game();
             pendingGame.GameState = "pending";
             gameCounter = 1;
             games.Add(gameCounter.ToString(), pendingGame);
@@ -55,7 +52,7 @@ namespace Boggle
         /// </summary>
         public CreateUserReturn CreateUser(CreateUserInfo user)
         {
-            if (user.Nickname == null || user == null || user.Nickname.Trim().Length == 0)
+            if (user == null || user.Nickname == null || user.Nickname.Trim().Length == 0)
             {
                 SetStatus(Forbidden);
                 return null;
@@ -205,15 +202,15 @@ namespace Boggle
         /// 
         /// Note: The word is not case sensitive.
         /// </summary>
-        public PlayWordReturn PlayWord(PlayWordInfo info, string gameID)
+        public PlayWordReturn PlayWord(string gameID, string userToken, string wordInput)
         {
-            Game currGame;
+            Game currGame = null;
             User currUser;
             Words tmpWord = new Words();
             PlayWordReturn wordReturn = new PlayWordReturn();
-            if (info.Word == null || info.UserToken == null || gameID == null || info.Word.Trim().Length == 0 ||
-               !users.TryGetValue(info.UserToken, out currUser) || !games.TryGetValue(gameID, out currGame) ||
-               (currGame.Player1.UserToken != info.UserToken && currGame.Player2.UserToken != info.UserToken))
+            if (wordInput == null || userToken == null || gameID == null || wordInput.Trim().Length == 0 ||
+                !users.TryGetValue(userToken, out currUser) || !games.TryGetValue(gameID, out currGame) ||
+                (currGame.Player1.UserToken != userToken && currGame.Player2.UserToken != userToken))
             {
                 SetStatus(Forbidden);
                 return null;
@@ -223,7 +220,7 @@ namespace Boggle
                 SetStatus(Conflict);
                 return null;
             }
-            string word = info.Word.Trim();
+            string word = wordInput.Trim();
             tmpWord.Word = word;
             if (currGame.internalBoard.CanBeFormed(word))
             {
@@ -231,7 +228,7 @@ namespace Boggle
                 {
                     if (line.Contains(word))
                     {
-                        
+
                         if (word.Length == 3 || word.Length == 4)
                         {
                             tmpWord.Score = 1;
@@ -258,7 +255,7 @@ namespace Boggle
                             wordReturn.Score = "11";
                         }
 
-                        if (currGame.Player1.UserToken == info.UserToken)
+                        if (currGame.Player1.UserToken == userToken)
                         {
                             currGame.Player1.WordsPlayed.Add(tmpWord);
                         }
@@ -274,7 +271,7 @@ namespace Boggle
             }
 
             tmpWord.Score = -1;
-            if (currGame.Player1.UserToken == info.UserToken)
+            if (currGame.Player1.UserToken == userToken)
             {
                 currGame.Player1.WordsPlayed.Add(tmpWord);
             }
@@ -285,7 +282,6 @@ namespace Boggle
             wordReturn.Score = "-1";
             SetStatus(OK);
             return wordReturn;
-
         }
 
         /// <summary>
@@ -300,7 +296,7 @@ namespace Boggle
         /// 
         /// Note: The Board and Words are not case sensitive.
         /// </summary>
-        public Game GameStatus(GameStatusInfo info, string gameID)
+        public Game GameStatus(string gameID, string brief)
         {
             Game game;
             if (games.TryGetValue(gameID, out game))
@@ -312,7 +308,7 @@ namespace Boggle
                     return game.GetPending();
                 }
                 // If the game is active or completed and Brief == "yes"
-                else if (info.Brief != null && info.Brief.ToLower() == "yes")
+                else if (brief != null && brief.ToLower() == "yes")
                 {
                     // Update game.TimeLeft
                     if (game.GameState == "active")

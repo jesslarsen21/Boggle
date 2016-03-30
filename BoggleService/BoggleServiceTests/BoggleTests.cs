@@ -94,7 +94,7 @@ namespace Boggle
         {
             dynamic d = new ExpandoObject();
             d.Nickname = null;
-            Response r = client.DoPostAsync("/users", d).Result;
+            Response r = client.DoPostAsync("users", d).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -155,11 +155,10 @@ namespace Boggle
         {
             dynamic d = new ExpandoObject();
             d.Nickname = "Name";
-
             Response r1 = client.DoPostAsync("/users", d).Result;
             Assert.AreEqual(Created, r1.Status);
             Assert.IsNotNull(r1.Data.UserToken);
-
+            
             Response r2 = client.DoPostAsync("/users", d).Result;
             Assert.AreEqual(Created, r2.Status);
             Assert.IsNotNull(r2.Data.UserToken);
@@ -350,7 +349,7 @@ namespace Boggle
         {
             dynamic d = new ExpandoObject();
             d.UserToken = null;
-            Response r = client.DoPutAsync("/games", d).Result;
+            Response r = client.DoPutAsync(d, "/games").Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -362,7 +361,7 @@ namespace Boggle
         {
             dynamic d = new ExpandoObject();
             d.UserToken = "";
-            Response r = client.DoPutAsync("/games", d).Result;
+            Response r = client.DoPutAsync(d, "/games").Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -374,7 +373,7 @@ namespace Boggle
         {
             dynamic d = new ExpandoObject();
             d.UserToken = "asdf";
-            Response r = client.DoPutAsync("/games", d).Result;
+            Response r = client.DoPutAsync(d, "/games").Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -387,7 +386,7 @@ namespace Boggle
             dynamic d = new ExpandoObject();
             d.Nickname = "Name";
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            Response r = client.DoPutAsync("/games", d).Result;
+            Response r = client.DoPutAsync(d, "/games").Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -412,7 +411,7 @@ namespace Boggle
 
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
 
-            Response r3 = client.DoPutAsync("/games", d).Result;
+            Response r3 = client.DoPutAsync(d, "/games").Result;
             Assert.AreEqual(Forbidden, r3.Status);
         }
 
@@ -430,7 +429,7 @@ namespace Boggle
             Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
 
-            Response r3 = client.DoPutAsync("/games", d).Result;
+            Response r3 = client.DoPutAsync(d, "/games").Result;
             Assert.AreEqual(OK, r3.Status);
         }
 
