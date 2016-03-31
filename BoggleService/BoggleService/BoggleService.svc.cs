@@ -100,7 +100,7 @@ namespace Boggle
         public JoinGameReturn JoinGame(JoinGameInfo info)
         {
             User user;
-            if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit > 5 && info.TimeLimit < 120)
+            if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit >= 5 && info.TimeLimit <= 120)
             {
                 if (pendingGame.GameID == null)
                 {
@@ -123,6 +123,8 @@ namespace Boggle
                     games.Remove(pendingGame.GameID);
                     activeGame.GameID = pendingGame.GameID;
                     games.Add(activeGame.GameID, activeGame);
+                    activeGame.internalBoard = new BoggleBoard();
+                    activeGame.StartTime = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
                     // Add the second user and average the time limit
                     user.Score = 0;
@@ -214,25 +216,39 @@ namespace Boggle
         /// 
         /// Note: The word is not case sensitive.
         /// </summary>
-        public PlayWordReturn PlayWord(string gameID, string userToken, string wordInput)
+        public PlayWordReturn PlayWord(string gameID, PlayWordInput info)
         {
             Game currGame = null;
             User currUser;
             Words tmpWord = new Words();
             PlayWordReturn wordReturn = new PlayWordReturn();
-            if (wordInput == null || userToken == null || gameID == null || wordInput.Trim().Length == 0 ||
-                !users.TryGetValue(userToken, out currUser) || !games.TryGetValue(gameID, out currGame) ||
-                (currGame.Player1.UserToken != userToken && currGame.Player2.UserToken != userToken))
+            if (info.Word == null || info.UserToken == null || gameID == null || info.Word.Trim().Length == 0 ||
+                !users.TryGetValue(info.UserToken, out currUser) || !games.TryGetValue(gameID, out currGame) ||
+                (currGame.Player1.UserToken != info.UserToken && currGame.Player2.UserToken != info.UserToken))
             {
                 SetStatus(Forbidden);
                 return null;
             }
-            else if (currGame.GameState != "active")
+
+            // Update game.TimeLeft
+            if (currGame.GameState == "active")
+            {
+                long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                currGame.TimeLeft -= (int)(time - currGame.StartTime);
+                // If the time is up, end the game.
+                if (currGame.TimeLeft <= 0)
+                {
+                    currGame.GameState = "completed";
+                    currGame.TimeLeft = 0;
+                }
+            }
+
+            if (currGame.GameState != "active")
             {
                 SetStatus(Conflict);
                 return null;
             }
-            string word = wordInput.Trim();
+            string word = info.Word.Trim();
             tmpWord.Word = word;
             if (currGame.internalBoard.CanBeFormed(word))
             {
@@ -267,7 +283,7 @@ namespace Boggle
                             wordReturn.Score = "11";
                         }
 
-                        if (currGame.Player1.UserToken == userToken)
+                        if (currGame.Player1.UserToken == info.UserToken)
                         {
                             currGame.Player1.WordsPlayed.Add(tmpWord);
                         }
@@ -283,7 +299,7 @@ namespace Boggle
             }
 
             tmpWord.Score = -1;
-            if (currGame.Player1.UserToken == userToken)
+            if (currGame.Player1.UserToken == info.UserToken)
             {
                 currGame.Player1.WordsPlayed.Add(tmpWord);
             }
@@ -325,8 +341,8 @@ namespace Boggle
                     // Update game.TimeLeft
                     if (game.GameState == "active")
                     {
-                        DateTime time = DateTime.UtcNow;
-                        game.TimeLeft -= (int)time.Subtract(game.StartTime).TotalSeconds;
+                        long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                        game.TimeLeft -= (int)(time - game.StartTime);
                         // If the time is up, end the game.
                         if (game.TimeLeft <= 0)
                         {
@@ -347,8 +363,8 @@ namespace Boggle
                     // Update game.TimeLeft
                     if (game.GameState == "active")
                     {
-                        DateTime time = DateTime.UtcNow;
-                        game.TimeLeft -= (int)time.Subtract(game.StartTime).TotalSeconds;
+                        long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                        game.TimeLeft -= (int)(time - game.StartTime);
                         // If the time is up, end the game.
                         if (game.TimeLeft <= 0)
                         {

@@ -51,6 +51,7 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public string Board { get; set; }
 
+        [DataMember(EmitDefaultValue = false)]
         public BoggleBoard internalBoard { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
@@ -67,6 +68,9 @@ namespace Boggle
 
         [DataMember(EmitDefaultValue = false)]
         public string GameID { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public long StartTime { get; set; }
 
         public Game GetBrief()
         {
@@ -96,9 +100,6 @@ namespace Boggle
             output.GameState = "pending";
             return output;
         }
-
-        [DataMember(EmitDefaultValue = false)]
-        public DateTime StartTime { get; set; }
     }
 
     public class CreateUserInfo
@@ -126,6 +127,13 @@ namespace Boggle
     public class JoinGameReturn
     {
         public string GameID { get; set; }
+    }
+
+    public class PlayWordInput
+    {
+        public string UserToken { get; set; }
+
+        public string Word { get; set; }
     }
 
     public class PlayWordReturn

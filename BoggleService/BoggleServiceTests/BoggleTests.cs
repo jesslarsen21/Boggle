@@ -180,10 +180,10 @@ namespace Boggle
             {
                 Response r = client.DoPostAsync("/users", d).Result;
                 Assert.AreEqual(Created, r.Status);
-                Assert.IsNotNull(r.Data.UserToken);
                 string token = r.Data.UserToken;
+                Assert.IsNotNull(token);
                 // Fails to add the token to the collection if it is a duplicate
-                Assert.IsFalse(userTokens.Add(token));
+                Assert.IsTrue(userTokens.Add(token));
             }
         }
 
@@ -194,7 +194,7 @@ namespace Boggle
         public void JoinGameTest1()
         {
             dynamic d = new ExpandoObject();
-            d.UserToken = null;
+            d.UserToken = "";
             d.TimeLimit = 60;
             Response r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Forbidden, r.Status);
@@ -235,7 +235,6 @@ namespace Boggle
             dynamic d = new ExpandoObject();
             d.Nickname = "Name";
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            d.TimeLimit = null;
             Response r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
@@ -299,6 +298,8 @@ namespace Boggle
 
             r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Conflict, r.Status);
+
+            r = client.DoPutAsync(d, "/games").Result;
         }
 
         /// <summary>
@@ -318,6 +319,8 @@ namespace Boggle
 
             r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Conflict, r.Status);
+
+            r = client.DoPutAsync(d, "/games").Result;
         }
 
         /// <summary>
@@ -457,7 +460,7 @@ namespace Boggle
 
             d.UserToken = null;
             d.Word = null;
-            Response r = client.DoPutAsync("/games/", d).Result;
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -484,7 +487,7 @@ namespace Boggle
 
             d.UserToken = null;
             d.Word = null;
-            Response r = client.DoPutAsync("/games/asdf", d).Result;
+            Response r = client.DoPutAsync(d, "/games/asdf").Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -511,7 +514,7 @@ namespace Boggle
 
             d.UserToken = null;
             d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -538,7 +541,7 @@ namespace Boggle
 
             d.UserToken = "";
             d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -565,7 +568,7 @@ namespace Boggle
 
             d.UserToken = "asdf";
             d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -592,7 +595,7 @@ namespace Boggle
 
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
             d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
             Assert.AreEqual(Forbidden, r.Status);
         }
 
@@ -610,8 +613,9 @@ namespace Boggle
             Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
             
-            d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            d.Word = "word";
+            string gameID = r1.Data.GameID;
+            Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
             Assert.AreEqual(Conflict, r.Status);
         }
 
@@ -626,19 +630,21 @@ namespace Boggle
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
             d.TimeLimit = 5;
             Response r1 = client.DoPostAsync("/games", d).Result;
-            Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
 
-            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            Response r2 = client.DoPostAsync("/games", d).Result;
-            Assert.AreEqual(Created, r2.Status);
-            Assert.IsNotNull(r2.Data.GameID);
+            if (r1.Status != Created)
+            {
+                d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+                Response r2 = client.DoPostAsync("/games", d).Result;
+                Assert.AreEqual(Created, r2.Status);
+                Assert.IsNotNull(r2.Data.GameID);
+                Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
+            }
 
-            Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
-
-            System.Threading.Thread.Sleep(5000);
-            d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            System.Threading.Thread.Sleep(6000);
+            d.Word = "word";
+            string gameID = r1.Data.GameID;
+            Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
             Assert.AreEqual(Conflict, r.Status);
         }
 
@@ -664,8 +670,8 @@ namespace Boggle
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
 
             d.Word = null;
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
-            Assert.AreEqual(OK, r.Status);
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual(Forbidden, r.Status);
         }
 
         /// <summary>
@@ -673,37 +679,6 @@ namespace Boggle
         /// </summary>
         [TestMethod]
         public void PlayWordTest10()
-        {
-            dynamic d = new ExpandoObject();
-            d.Nickname = "Name";
-            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            d.TimeLimit = 5;
-
-            dynamic g = new ExpandoObject();
-            g.UserToken = d.UserToken;
-            g.TimeLimit = 5;
-            Response r1 = client.DoPostAsync("/games", g).Result;
-            Assert.AreEqual(Accepted, r1.Status);
-            Assert.IsNotNull(r1.Data.GameID);
-
-            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            Response r2 = client.DoPostAsync("/games", d).Result;
-            Assert.AreEqual(Created, r2.Status);
-            Assert.IsNotNull(r2.Data.GameID);
-
-            Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
-
-            d.Word = "";
-            string ID = r1.Data.GameID;
-            Response r = client.DoPutAsync("/games/" + ID, d).Result;
-            Assert.AreEqual(OK, r.Status);
-        }
-
-        /// <summary>
-        /// Duplicate words (second score = 0)
-        /// </summary>
-        [TestMethod]
-        public void PlayWordTest11()
         {
             dynamic d = new ExpandoObject();
             d.Nickname = "Name";
@@ -720,16 +695,47 @@ namespace Boggle
 
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
 
-            d.Word = "a";
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
-            Assert.AreEqual(OK, r.Status);
-            r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
-            Assert.AreEqual(OK, r.Status);
-            Assert.AreEqual(0, r.Data.Score);
+            d.Word = "";
+            Response r = client.DoPutAsync(d, "/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual(Forbidden, r.Status);
         }
 
         /// <summary>
-        /// Duplicate words (second score = 0)
+        /// Duplicate words (both invalid)
+        /// </summary>
+        [TestMethod]
+        public void PlayWordTest11()
+        {
+            dynamic d = new ExpandoObject();
+            d.Nickname = "Name";
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            d.TimeLimit = 30;
+            Response r1 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+            Assert.IsNotNull(r1.Data.GameID);
+
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            Response r2 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Created, r2.Status);
+            Assert.IsNotNull(r2.Data.GameID);
+
+            Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
+
+            d.Word = "word";
+            string gameID = r1.Data.GameID;
+            Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
+
+            Response test = client.DoGetAsync("/games/" + gameID).Result;
+            Assert.AreEqual("completed", test.Data.GameState);
+
+            Assert.AreEqual(OK, r.Status);
+            r = client.DoPutAsync(d, "/games/" + gameID).Result;
+            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(-1, r.Data.Score);
+        }
+
+        /// <summary>
+        /// Duplicate words (both invalid, different cases)
         /// </summary>
         [TestMethod]
         public void PlayWordTest12()
@@ -749,13 +755,14 @@ namespace Boggle
 
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
 
-            d.Word = "a";
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            d.Word = "word";
+            string gameID = r1.Data.GameID;
+            Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
             Assert.AreEqual(OK, r.Status);
-            d.Word = "A";
-            r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            d.Word = "WORD";
+            r = client.DoPutAsync(d, "/games/" + gameID).Result;
             Assert.AreEqual(OK, r.Status);
-            Assert.AreEqual(0, r.Data.Score);
+            Assert.AreEqual(-1, r.Data.Score);
         }
     }
 }
