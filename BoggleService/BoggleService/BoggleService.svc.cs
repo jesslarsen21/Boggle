@@ -230,6 +230,7 @@ namespace Boggle
                 return null;
             }
 
+
             // Update game.TimeLeft
             if (currGame.GameState == "active")
             {

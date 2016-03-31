@@ -726,7 +726,8 @@ namespace Boggle
             Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
 
             Response test = client.DoGetAsync("/games/" + gameID).Result;
-            Assert.AreEqual("completed", test.Data.GameState);
+            string state = test.Data.GameState;
+            Assert.AreEqual("completed", state);
 
             Assert.AreEqual(OK, r.Status);
             r = client.DoPutAsync(d, "/games/" + gameID).Result;
@@ -754,6 +755,41 @@ namespace Boggle
             Assert.IsNotNull(r2.Data.GameID);
 
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
+
+            d.Word = "word";
+            string gameID = r1.Data.GameID;
+            Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
+            Assert.AreEqual(OK, r.Status);
+            d.Word = "WORD";
+            r = client.DoPutAsync(d, "/games/" + gameID).Result;
+            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(-1, r.Data.Score);
+        }
+
+        /// <summary>
+        /// Testing playing a game when timeleft is 0.
+        /// </summary>
+        [TestMethod]
+        public void PlayWordTest13()
+        {
+            dynamic d = new ExpandoObject();
+            d.Nickname = "Name";
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            d.TimeLimit = 5;
+            Response r1 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+            Assert.IsNotNull(r1.Data.GameID);
+
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            Response r2 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Created, r2.Status);
+            Assert.IsNotNull(r2.Data.GameID);
+
+            Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
+
+            Response r = client.DoPutAsync(d, "/games/" + r2.Data.GameID).Result;
+            string gameboard = r2.Data.GameBoard;
+
 
             d.Word = "word";
             string gameID = r1.Data.GameID;
