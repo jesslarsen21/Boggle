@@ -123,8 +123,6 @@ namespace Boggle
                     games.Remove(pendingGame.GameID);
                     activeGame.GameID = pendingGame.GameID;
                     games.Add(activeGame.GameID, activeGame);
-                    activeGame.internalBoard = new BoggleBoard();
-                    activeGame.StartTime = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
                     // Add the second user and average the time limit
                     user.Score = 0;
@@ -132,6 +130,8 @@ namespace Boggle
                     activeGame.Player2 = user;
                     activeGame.TimeLimit = (activeGame.TimeLimit + info.TimeLimit) / 2;
                     activeGame.TimeLeft = activeGame.TimeLimit;
+                    activeGame.internalBoard = new BoggleBoard();
+                    activeGame.StartTime = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
                     // Create a new pending game
                     gameCounter++;
@@ -235,7 +235,7 @@ namespace Boggle
             if (currGame.GameState == "active")
             {
                 long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                currGame.TimeLeft -= (int)(time - currGame.StartTime);
+                currGame.TimeLeft = currGame.TimeLimit - (int)(time - currGame.StartTime);
                 // If the time is up, end the game.
                 if (currGame.TimeLeft <= 0)
                 {
@@ -354,7 +354,7 @@ namespace Boggle
                     if (game.GameState == "active")
                     {
                         long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                        game.TimeLeft -= (int)(time - game.StartTime);
+                        game.TimeLeft = game.TimeLimit - (int)(time - game.StartTime);
                         // If the time is up, end the game.
                         if (game.TimeLeft <= 0)
                         {
@@ -376,7 +376,7 @@ namespace Boggle
                     if (game.GameState == "active")
                     {
                         long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                        game.TimeLeft -= (int)(time - game.StartTime);
+                        game.TimeLeft = game.TimeLimit - (int)(time - game.StartTime);
                         // If the time is up, end the game.
                         if (game.TimeLeft <= 0)
                         {
