@@ -181,8 +181,9 @@ namespace Boggle
                 Response r = client.DoPostAsync("/users", d).Result;
                 Assert.AreEqual(Created, r.Status);
                 Assert.IsNotNull(r.Data.UserToken);
+                string token = r.Data.UserToken;
                 // Fails to add the token to the collection if it is a duplicate
-                Assert.IsFalse(userTokens.Add(r.Data.UserToken));
+                Assert.IsFalse(userTokens.Add(token));
             }
         }
 
@@ -677,7 +678,11 @@ namespace Boggle
             d.Nickname = "Name";
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
             d.TimeLimit = 5;
-            Response r1 = client.DoPostAsync("/games", d).Result;
+
+            dynamic g = new ExpandoObject();
+            g.UserToken = d.UserToken;
+            g.TimeLimit = 5;
+            Response r1 = client.DoPostAsync("/games", g).Result;
             Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
 
@@ -689,7 +694,8 @@ namespace Boggle
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
 
             d.Word = "";
-            Response r = client.DoPutAsync("/games/" + r1.Data.GameID, d).Result;
+            string ID = r1.Data.GameID;
+            Response r = client.DoPutAsync("/games/" + ID, d).Result;
             Assert.AreEqual(OK, r.Status);
         }
 
