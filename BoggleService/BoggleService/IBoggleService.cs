@@ -80,8 +80,8 @@ namespace Boggle
         /// 
         /// Note: The word is not case sensitive.
         /// </summary>
-        [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}?UserToken={userToken}&Word={wordInput}")]
-        PlayWordReturn PlayWord(string gameID, string userToken, string wordInput);
+        [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
+        PlayWordReturn PlayWord(string gameID, PlayWordInput info);
 
         /// <summary>
         /// Get game status information.
