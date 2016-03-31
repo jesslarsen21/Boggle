@@ -19,6 +19,16 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public List<Words> WordsPlayed { get; set; }
 
+        public List<String> GetAllWordsPlayed()
+        {
+            List<string> words = new List<string>() ;
+            foreach (var word in WordsPlayed)
+            {
+                words.Add(word.Word);
+            }
+            return words;
+        }
+
         public User GetBrief()
         {
             User output = new User();

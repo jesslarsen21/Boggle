@@ -250,13 +250,24 @@ namespace Boggle
             }
             string word = info.Word.Trim();
             tmpWord.Word = word;
+            var listofWordsPlayed = currGame.Player1.GetAllWordsPlayed();
+            var listofWordsPlayed2 = currGame.Player2.GetAllWordsPlayed();
+
+            
+
             if (currGame.internalBoard.CanBeFormed(word))
             {
                 foreach (string line in File.ReadLines("dictionary.txt"))
                 {
                     if (line.Contains(word))
                     {
-
+                        if (listofWordsPlayed.Contains(word) || listofWordsPlayed2.Contains(word))
+                        {
+                            tmpWord.Score = 0;
+                            wordReturn.Score = "0";
+                            SetStatus(OK);
+                            return wordReturn;
+                        }
                         if (word.Length == 3 || word.Length == 4)
                         {
                             tmpWord.Score = 1;
