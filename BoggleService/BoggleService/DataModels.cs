@@ -13,7 +13,7 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public string UserToken { get; set; }
 
-        [DataMember(EmitDefaultValue = false)]
+        [DataMember]
         public int Score { get; set; }
 
         [DataMember(EmitDefaultValue = false)]

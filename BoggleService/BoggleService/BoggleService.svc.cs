@@ -297,10 +297,12 @@ namespace Boggle
                         if (currGame.Player1.UserToken == info.UserToken)
                         {
                             currGame.Player1.WordsPlayed.Add(tmpWord);
+                            currGame.Player1.Score += tmpWord.Score;
                         }
                         else
                         {
                             currGame.Player2.WordsPlayed.Add(tmpWord);
+                            currGame.Player2.Score += tmpWord.Score;
                         }
 
                         SetStatus(OK);
@@ -371,9 +373,6 @@ namespace Boggle
                 // Otherwise, if the game is active
                 else if (game.GameState == "active")
                 {
-                    // Update game.TimeLeft
-                    if (game.GameState == "active")
-                    {
                         long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                         game.TimeLeft = game.TimeLimit - (int)(time - game.StartTime);
                         // If the time is up, end the game.
@@ -384,11 +383,6 @@ namespace Boggle
                             SetStatus(OK);
                             return game.GetComplete();
                         }
-                    }
-                    else
-                    {
-                        game.TimeLeft = 0;
-                    }
                     SetStatus(OK);
                     return game.GetActive();
                 }
