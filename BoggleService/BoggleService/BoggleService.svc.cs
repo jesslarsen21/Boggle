@@ -131,6 +131,7 @@ namespace Boggle
                     activeGame.TimeLimit = (activeGame.TimeLimit + info.TimeLimit) / 2;
                     activeGame.TimeLeft = activeGame.TimeLimit;
                     activeGame.internalBoard = new BoggleBoard();
+                    activeGame.Board = activeGame.internalBoard.ToString();
                     activeGame.StartTime = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
                     // Create a new pending game
@@ -262,7 +263,7 @@ namespace Boggle
                 {
                     if (line.Contains(word))
                     {
-                        if (listofWordsPlayed.Contains(word) || listofWordsPlayed2.Contains(word))
+                        if (listofWordsPlayed.Contains(word) || listofWordsPlayed2.Contains(word) || word.Length < 3)
                         {
                             tmpWord.Score = 0;
                             wordReturn.Score = "0";
@@ -383,6 +384,7 @@ namespace Boggle
                             game.GameState = "completed";
                             game.TimeLeft = 0;
                             SetStatus(OK);
+
                             return game;
                         }
                     }
