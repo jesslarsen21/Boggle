@@ -69,8 +69,8 @@ namespace Boggle
 
         [DataMember(EmitDefaultValue = false)]
         public string Board { get; set; }
+        
 
-        [DataMember(EmitDefaultValue = false)]
         public BoggleBoard internalBoard { get; set; }
 
         [DataMember(EmitDefaultValue = false)]

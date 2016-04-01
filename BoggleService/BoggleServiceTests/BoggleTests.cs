@@ -3,6 +3,8 @@ using System.Dynamic;
 using static System.Net.HttpStatusCode;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.IO;
+using System;
 
 namespace Boggle
 {
@@ -769,6 +771,201 @@ namespace Boggle
             r = client.DoPutAsync(d, "/games/" + gameID).Result;
             Assert.AreEqual(OK, r.Status);
             Assert.AreEqual(-1, (int)r.Data.Score);
+        }
+
+        /// <summary>
+        /// testing the score of all playable words.
+        /// </summary>
+        [TestMethod]
+        public void PlayWordTest13()
+        {
+            dynamic d = new ExpandoObject();
+            d.Nickname = "Name";
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            d.TimeLimit = 60;
+            Response r1 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+            Assert.IsNotNull(r1.Data.GameID);
+            string UserToken1 = d.UserToken;
+
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            Response r2 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Created, r2.Status);
+            Assert.IsNotNull(r2.Data.GameID);
+            string UserToken2 = d.UserToken;
+
+            Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
+
+            Response res = client.DoGetAsync("/games/{0}", (string)r1.Data.GameID, "no").Result;
+            Assert.AreEqual(OK, res.Status);
+
+            
+
+            string Board = res.Data.Board;
+
+            BoggleBoard board = new BoggleBoard((string)res.Data.Board);
+            List<string> twoOrLessLetter = new List<string>();
+            List<string> threeOrFourLetter = new List<string>();
+            List<string> fiveLetter = new List<string>();
+            List<string> sixLetter = new List<string>();
+            List<string> sevenLetter = new List<string>();
+            List<string> longerLetter = new List<string>();
+
+            foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "\\dictionary.txt"))
+            {
+                if (board.CanBeFormed(line.Trim()))
+                {
+                    var word = line.Trim();
+                    if(word.Length < 3)
+                    {
+                        twoOrLessLetter.Add(word);
+                    }
+                    else if (word.Length == 3 || word.Length == 4)
+                    {
+                        threeOrFourLetter.Add(word);
+                    }
+                    else if (word.Length == 5)
+                    {
+                        fiveLetter.Add(word);
+                    }
+                    else if (word.Length == 6)
+                    {
+                        sixLetter.Add(word);
+                    }
+                    else if(word.Length == 7)
+                    {
+                        sevenLetter.Add(word);
+                    }
+                    else
+                    {
+                        longerLetter.Add(word);
+                    }
+                }
+            }
+            string gameID = r1.Data.GameID;
+            foreach (string currWord in threeOrFourLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken1;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("1", (string)r3.Data.Score);
+            }
+            foreach (string currWord in fiveLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken1;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("2", (string)r3.Data.Score);
+            }
+            foreach (string currWord in sixLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken1;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("3", (string)r3.Data.Score);
+            }
+            foreach (string currWord in sevenLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken1;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("5", (string)r3.Data.Score);
+            }
+            foreach (string currWord in longerLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken1;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("11", (string)r3.Data.Score);
+            }
+            
+            foreach (string currWord in threeOrFourLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken2;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("0", (string)r3.Data.Score);
+            }
+            foreach (string currWord in fiveLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken2;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("0", (string)r3.Data.Score);
+            }
+            foreach (string currWord in sixLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken2;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("0", (string)r3.Data.Score);
+            }
+            foreach (string currWord in sevenLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken2;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("0", (string)r3.Data.Score);
+            }
+            foreach (string currWord in longerLetter)
+            {
+                dynamic d2 = new ExpandoObject();
+                d2.UserToken = UserToken2;
+                d2.Word = currWord;
+                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Assert.AreEqual("0", (string)r3.Data.Score);
+            }
+
+            dynamic d3 = new ExpandoObject();
+            d3.UserToken = UserToken2;
+            d3.Word = "kdljflskjdflskj";
+            Response r4 = client.DoPutAsync(d3, "/games/" + gameID).Result;
+            Assert.AreEqual("-1", (string)r4.Data.Score);
+
+        }
+
+
+        /// <summary>
+        /// testing playing a word after time has run out, even if you don't ever request the game status.
+        /// </summary>
+        [TestMethod]
+        public void PlayWordTest14()
+        {
+            dynamic d = new ExpandoObject();
+            d.Nickname = "Name";
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            d.TimeLimit = 5;
+            Response r1 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+            Assert.IsNotNull(r1.Data.GameID);
+
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            Response r2 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Created, r2.Status);
+            Assert.IsNotNull(r2.Data.GameID);
+
+            Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
+            
+            System.Threading.Thread.Sleep(10000);
+
+            Response res = client.DoGetAsync("/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual("completed", (string)res.Data.GameState);
+
+
+            d.Word = "word";
+            string gameID = r1.Data.GameID;
+            Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
+            Assert.AreEqual(Conflict, r.Status);
+
         }
     }
 }
