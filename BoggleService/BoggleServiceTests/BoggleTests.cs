@@ -967,5 +967,62 @@ namespace Boggle
             Assert.AreEqual(Conflict, r.Status);
 
         }
+        
+        /// <summary>
+        /// first gamestatus test. Will test pending game state, and also invalid gameID
+        /// </summary>
+        [TestMethod]
+        public void GameStatusTest1()
+        {
+            //Add a user, and start a pending game.
+            dynamic d = new ExpandoObject();
+            d.Nickname = "Name";
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            d.TimeLimit = 60;
+            Response r1 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+            Assert.IsNotNull(r1.Data.GameID);
+
+            Response res = client.DoGetAsync("/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual("pending", (string)res.Data.GameState);
+
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            Response r2 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Created, r2.Status);
+            Assert.IsNotNull(r2.Data.GameID);
+
+            res = client.DoGetAsync("/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual("active", (string)res.Data.GameState);
+
+            res = client.DoGetAsync("/games/" + "324").Result;
+            Assert.AreEqual(Forbidden, res.Status);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GameStatusTest2()
+        {
+            //Add a user, and start a pending game.
+            dynamic d = new ExpandoObject();
+            d.Nickname = "Name";
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            d.TimeLimit = 60;
+            Response r1 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Accepted, r1.Status);
+            Assert.IsNotNull(r1.Data.GameID);
+
+            Response res = client.DoGetAsync("/games/" + r1.Data.GameID).Result;
+            Assert.AreEqual("pending", (string)res.Data.GameState);
+
+            d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
+            Response r2 = client.DoPostAsync("/games", d).Result;
+            Assert.AreEqual(Created, r2.Status);
+            Assert.IsNotNull(r2.Data.GameID);
+
+            res = client.DoGetAsync("/games/" + r1.Data.GameID, "yes").Result;
+            Assert.AreEqual(null, res.Data.Board);
+        }
     }
 }
