@@ -250,13 +250,11 @@ namespace Boggle
                 SetStatus(Conflict);
                 return null;
             }
-            string word = info.Word.Trim();
+            string word = info.Word.Trim().ToUpper();
             tmpWord.Word = word;
             var listofWordsPlayed = currGame.Player1.GetAllWordsPlayed();
             var listofWordsPlayed2 = currGame.Player2.GetAllWordsPlayed();
-
             
-
             if (currGame.internalBoard.CanBeFormed(word))
             {
                 foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
