@@ -804,7 +804,7 @@ namespace Boggle
             List<string> sevenLetter = new List<string>();
             List<string> longerLetter = new List<string>();
 
-            foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "\\dictionary.txt"))
+            foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "/dictionary.txt"))
             {
                 if (board.CanBeFormed(line.Trim()))
                 {
