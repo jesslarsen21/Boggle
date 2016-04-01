@@ -68,6 +68,7 @@ namespace Boggle
                 User tmpUser = new User();
                 tmpUser.Nickname = user.Nickname;
                 tmpUser.UserToken = Token;
+                tmpUser.Score = 0;
                 users.Add(Token, tmpUser);
 
                 SetStatus(Created);
@@ -131,6 +132,7 @@ namespace Boggle
                     activeGame.TimeLimit = (activeGame.TimeLimit + info.TimeLimit) / 2;
                     activeGame.TimeLeft = activeGame.TimeLimit;
                     activeGame.internalBoard = new BoggleBoard();
+                    activeGame.Board = activeGame.internalBoard.ToString();
                     activeGame.StartTime = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
                     // Create a new pending game
@@ -257,7 +259,7 @@ namespace Boggle
 
             if (currGame.internalBoard.CanBeFormed(word))
             {
-                foreach (string line in File.ReadLines("dictionary.txt"))
+                foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
                 {
                     if (line.Contains(word))
                     {
@@ -382,7 +384,7 @@ namespace Boggle
                             game.GameState = "completed";
                             game.TimeLeft = 0;
                             SetStatus(OK);
-                            return game;
+                            return game.GetComplete();
                         }
                     }
                     else
@@ -397,7 +399,7 @@ namespace Boggle
                 {
                     game.TimeLeft = 0;
                     SetStatus(OK);
-                    return game;
+                    return game.GetComplete();
                 }
             }
             else
