@@ -19,7 +19,7 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public List<Words> WordsPlayed { get; set; }
 
-        public List<String> GetAllWordsPlayed()
+        public List<string> GetAllWordsPlayed()
         {
             List<string> words = new List<string>() ;
             foreach (var word in WordsPlayed)
@@ -41,6 +41,15 @@ namespace Boggle
             User output = new User();
             output.Nickname = Nickname;
             output.Score = Score;
+            return output;
+        }
+
+        public User GetComplete()
+        {
+            User output = new User();
+            output.Nickname = Nickname;
+            output.Score = Score;
+            output.WordsPlayed = WordsPlayed;
             return output;
         }
     }
@@ -108,6 +117,18 @@ namespace Boggle
         {
             Game output = new Game();
             output.GameState = "pending";
+            return output;
+        }
+
+        public Game GetComplete()
+        {
+            Game output = new Game();
+            output.GameState = GameState;
+            output.Board = Board;
+            output.TimeLimit = TimeLimit;
+            output.TimeLeft = TimeLeft;
+            output.Player1 = Player1.GetComplete();
+            output.Player2 = Player2.GetComplete();
             return output;
         }
     }

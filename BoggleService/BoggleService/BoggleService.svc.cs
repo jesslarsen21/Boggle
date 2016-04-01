@@ -68,6 +68,7 @@ namespace Boggle
                 User tmpUser = new User();
                 tmpUser.Nickname = user.Nickname;
                 tmpUser.UserToken = Token;
+                tmpUser.Score = 0;
                 users.Add(Token, tmpUser);
 
                 SetStatus(Created);
@@ -231,7 +232,6 @@ namespace Boggle
                 return null;
             }
 
-
             // Update game.TimeLeft
             if (currGame.GameState == "active")
             {
@@ -250,16 +250,14 @@ namespace Boggle
                 SetStatus(Conflict);
                 return null;
             }
-            string word = info.Word.Trim();
+            string word = info.Word.Trim().ToUpper();
             tmpWord.Word = word;
             var listofWordsPlayed = currGame.Player1.GetAllWordsPlayed();
             var listofWordsPlayed2 = currGame.Player2.GetAllWordsPlayed();
 
-            
-
             if (currGame.internalBoard.CanBeFormed(word))
             {
-                foreach (string line in File.ReadLines("dictionary.txt"))
+                foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
                 {
                     if (line.Contains(word))
                     {
@@ -384,8 +382,7 @@ namespace Boggle
                             game.GameState = "completed";
                             game.TimeLeft = 0;
                             SetStatus(OK);
-
-                            return game;
+                            return game.GetComplete();
                         }
                     }
                     else
@@ -400,7 +397,7 @@ namespace Boggle
                 {
                     game.TimeLeft = 0;
                     SetStatus(OK);
-                    return game;
+                    return game.GetComplete();
                 }
             }
             else
