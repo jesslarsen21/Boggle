@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
@@ -9,6 +11,9 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        private static readonly string BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+        private static int pendingGameID;
+
         private static readonly Dictionary<string, Game> games = new Dictionary<string, Game>();
         private static readonly Dictionary<string, User> users = new Dictionary<string, User>();
         private static Game pendingGame = new Game();
@@ -46,7 +51,47 @@ namespace Boggle
         /// </summary>
         public CreateUserReturn CreateUser(CreateUserInfo user)
         {
-            if (firstConstruction)
+            if (user == null || user.Nickname == null || user.Nickname.Trim().Length == 0)
+            {
+                SetStatus(Forbidden);
+                return null;
+            }
+            else
+            {
+                string Token = Guid.NewGuid().ToString();
+                CreateUserReturn newUser = new CreateUserReturn();
+                newUser.UserToken = Token;
+
+                using (SqlConnection conn = new SqlConnection(BoggleDB))
+                {
+                    conn.Open();
+
+                    using (SqlTransaction trans = conn.BeginTransaction())
+                    {
+                        using (SqlCommand command = new SqlCommand(
+                            "INSERT INTO Users(UserToken, Nickname) VALUES (@UserToken, @Nickname)", conn, trans))
+                        {
+                            command.Parameters.AddWithValue("@UserToken", Token);
+                            command.Parameters.AddWithValue("@Nickname", user.Nickname);
+
+                            try
+                            {
+                                command.ExecuteNonQuery();
+
+                                SetStatus(Created);
+
+                                return newUser;
+                            }
+                            catch (Exception)
+                            {
+                                SetStatus(Forbidden);
+                                return null;
+                            }
+                        }
+                    }
+                }
+            }
+            /*if (firstConstruction)
             {
                 pendingGame.GameState = "pending";
                 gameCounter = 1;
@@ -74,7 +119,7 @@ namespace Boggle
                 SetStatus(Created);
 
                 return newUser;
-            }
+            }*/
         }
 
         /// <summary>
