@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
@@ -177,7 +178,7 @@ namespace Boggle
                         // If there is already one player in the pending game
                         else
                         {
-                            int oldTimeLimit;
+                            int oldTimeLimit = 0;
                             // Fetch Player1's UserToken to verify this isn't a duplicate user
                             using (SqlCommand command = new SqlCommand(
                                 "SELECT Player1,TimeLimit FROM Games WHERE GameID=@GameID", conn, trans))
@@ -188,12 +189,15 @@ namespace Boggle
                                 {
                                     // Executes the command and returns an SqlDataReader for reading more than one item of output
                                     SqlDataReader reader = command.ExecuteReader();
-                                    if ((string)reader["Player1"] == info.UserToken)
+                                    reader.Read();
+                                    if (reader.GetString(0) == info.UserToken)
                                     {
                                         SetStatus(Conflict);
+                                        reader.Close();
                                         return null;
                                     }
-                                    oldTimeLimit = (int)reader["TimeLimit"];
+                                    oldTimeLimit = reader.GetInt32(1);
+                                    reader.Close();
                                 }
                                 catch (Exception)
                                 {
@@ -206,20 +210,19 @@ namespace Boggle
                                 "UPDATE Games SET Player2=@UserToken,Board=@Board,TimeLimit=@TimeLimit,StartTime=@StartTime,GameState=1 WHERE GameID=@GameID", conn, trans))
                             {
                                 command.Parameters.AddWithValue("@UserToken", info.UserToken);
-                                BoggleBoard board = new BoggleBoard();
-                                command.Parameters.AddWithValue("@Board", board.ToString());
-                                int newTimeLimit = (oldTimeLimit + info.TimeLimit) / 2;
-                                command.Parameters.AddWithValue("@TimeLimit", newTimeLimit);
-                                command.Parameters.AddWithValue("@StartTime", DateTime.UtcNow);
+                                command.Parameters.AddWithValue("@Board", (new BoggleBoard()).ToString());
+                                command.Parameters.AddWithValue("@TimeLimit", (oldTimeLimit + info.TimeLimit) / 2);
+                                command.Parameters.AddWithValue("@StartTime", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture));
                                 command.Parameters.AddWithValue("@GameID", pendingGameID);
 
                                 try
                                 {
                                     command.ExecuteNonQuery();
                                 }
-                                catch (Exception)
+                                catch (Exception e)
                                 {
                                     SetStatus(Forbidden);
+                                    Console.WriteLine(e.ToString());
                                     return null;
                                 }
                             }
