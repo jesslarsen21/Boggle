@@ -219,10 +219,9 @@ namespace Boggle
                                 {
                                     command.ExecuteNonQuery();
                                 }
-                                catch (Exception e)
+                                catch (Exception)
                                 {
                                     SetStatus(Forbidden);
-                                    Console.WriteLine(e.ToString());
                                     return null;
                                 }
                             }
@@ -255,22 +254,58 @@ namespace Boggle
         /// </summary>
         public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
-            User tmpUser;
-            if (user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || pendingGame.Player1 == null || user.UserToken != pendingGame.Player1.UserToken)
+            if (user.UserToken == null)
             {
                 SetStatus(Forbidden);
+                return;
             }
             else
             {
-                string id = pendingGame.GameID;
-                games.Remove(id);
+                using (SqlConnection conn = new SqlConnection(BoggleDB))
+                {
+                    conn.Open();
+                    using (SqlTransaction trans = conn.BeginTransaction())
+                    {
+                        // Fetch the UserToken of the player in a pending game
+                        using (SqlCommand command = new SqlCommand(
+                            "SELECT Player1 FROM Games WHERE GameState=0", conn, trans))
+                        {
+                            command.Parameters.AddWithValue("@UserToken", user.UserToken);
 
-                pendingGame = new Game();
-                pendingGame.GameState = "pending";
-                pendingGame.GameID = id;
-                games.Add(pendingGame.GameID, pendingGame);
-
-                SetStatus(OK);
+                            try
+                            {
+                                // If this UserToken is not the player in the pending game,
+                                // set status as Forbidden.
+                                string player1 = (string)command.ExecuteScalar();
+                                if (player1 == null || player1 != user.UserToken)
+                                {
+                                    throw new Exception();
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                SetStatus(Forbidden);
+                                return;
+                            }
+                        }
+                        // Remove the pending game from the database, because the player canceled it
+                        using (SqlCommand command = new SqlCommand(
+                            "DELETE FROM Games WHERE GameState=0", conn, trans))
+                        {
+                            try
+                            {
+                                command.ExecuteNonQuery();
+                            }
+                            catch (Exception)
+                            {
+                                SetStatus(Forbidden);
+                                return;
+                            }
+                        }
+                        trans.Commit();
+                        SetStatus(OK);
+                    }
+                }
             }
         }
 
