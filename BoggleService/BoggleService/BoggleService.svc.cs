@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.ServiceModel.Web;
@@ -9,6 +12,9 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        private static readonly string BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
+        private static int pendingGameID = -1;
+
         private static readonly Dictionary<string, Game> games = new Dictionary<string, Game>();
         private static readonly Dictionary<string, User> users = new Dictionary<string, User>();
         private static Game pendingGame = new Game();
@@ -46,14 +52,6 @@ namespace Boggle
         /// </summary>
         public CreateUserReturn CreateUser(CreateUserInfo user)
         {
-            if (firstConstruction)
-            {
-                pendingGame.GameState = "pending";
-                gameCounter = 1;
-                games.Add(gameCounter.ToString(), pendingGame);
-                firstConstruction = false;
-            }
-
             if (user == null || user.Nickname == null || user.Nickname.Trim().Length == 0)
             {
                 SetStatus(Forbidden);
@@ -65,15 +63,35 @@ namespace Boggle
                 CreateUserReturn newUser = new CreateUserReturn();
                 newUser.UserToken = Token;
 
-                User tmpUser = new User();
-                tmpUser.Nickname = user.Nickname;
-                tmpUser.UserToken = Token;
-                tmpUser.Score = 0;
-                users.Add(Token, tmpUser);
+                using (SqlConnection conn = new SqlConnection(BoggleDB))
+                {
+                    conn.Open();
 
-                SetStatus(Created);
+                    using (SqlTransaction trans = conn.BeginTransaction())
+                    {
+                        using (SqlCommand command = new SqlCommand(
+                            "INSERT INTO Users(UserToken, Nickname, Score) VALUES (@UserToken, @Nickname, 0)", conn, trans))
+                        {
+                            command.Parameters.AddWithValue("@UserToken", Token);
+                            command.Parameters.AddWithValue("@Nickname", user.Nickname);
 
-                return newUser;
+                            try
+                            {
+                                command.ExecuteNonQuery();
+
+                                SetStatus(Created);
+                                trans.Commit();
+
+                                return newUser;
+                            }
+                            catch (Exception)
+                            {
+                                SetStatus(Forbidden);
+                                return null;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -100,68 +118,122 @@ namespace Boggle
         /// </summary>
         public JoinGameReturn JoinGame(JoinGameInfo info)
         {
-            User user;
-            if (users.TryGetValue(info.UserToken, out user) && info.TimeLimit >= 5 && info.TimeLimit <= 120)
+            // No need to check for a valid UserToken here,
+            // because the database will handle that through exceptions
+            User user = new User();
+            if (info.TimeLimit >= 5 && info.TimeLimit <= 120)
             {
-                if (pendingGame.GameID == null)
+                using (SqlConnection conn = new SqlConnection(BoggleDB))
                 {
-                    pendingGame.GameID = gameCounter.ToString();
-                }
-                // If there is already one player in the pending game
-                if (pendingGame.Player1 != null)
-                {
-                    if (pendingGame.Player1.UserToken == info.UserToken)
+                    conn.Open();
+                    using (SqlTransaction trans = conn.BeginTransaction())
                     {
-                        SetStatus(Conflict);
-                        return null;
+                        // If this is the first player in the pending game
+                        if (pendingGameID == -1)
+                        {
+                            // Add the first user and set the time limit for the pending game
+                            user.Score = 0;
+                            user.WordsPlayed = new List<Words>();
+                            // Create the pending game
+                            using (SqlCommand command = new SqlCommand(
+                                "INSERT INTO Games(Player1, TimeLimit, GameState) VALUES (@UserToken, @TimeLimit, 0)", conn, trans))
+                            {
+                                command.Parameters.AddWithValue("@UserToken", info.UserToken);
+                                command.Parameters.AddWithValue("@TimeLimit", info.TimeLimit);
+
+                                try
+                                {
+                                    // Executes the command and returns the number of rows affected
+                                    command.ExecuteNonQuery();
+                                }
+                                catch (Exception)
+                                {
+                                    SetStatus(Forbidden);
+                                    return null;
+                                }
+                            }
+                            // Fetch the gameID from the database
+                            using (SqlCommand command = new SqlCommand(
+                                "SELECT GameID FROM Games WHERE GameState=0", conn, trans))
+                            {
+                                try
+                                {
+                                    // Executes the command and fetches the item in position [0, 0] of the output
+                                    pendingGameID = (int)command.ExecuteScalar();
+                                }
+                                catch (Exception)
+                                {
+                                    SetStatus(Forbidden);
+                                    return null;
+                                }
+                            }
+
+                            // Return info to user and commit database changes
+                            JoinGameReturn output = new JoinGameReturn();
+                            output.GameID = pendingGameID.ToString();
+                            SetStatus(Accepted);
+                            trans.Commit();
+                            return output;
+                        }
+                        // If there is already one player in the pending game
+                        else
+                        {
+                            int oldTimeLimit = 0;
+                            // Fetch Player1's UserToken to verify this isn't a duplicate user
+                            using (SqlCommand command = new SqlCommand(
+                                "SELECT Player1,TimeLimit FROM Games WHERE GameID=@GameID", conn, trans))
+                            {
+                                command.Parameters.AddWithValue("@GameID", pendingGameID);
+
+                                try
+                                {
+                                    // Executes the command and returns an SqlDataReader for reading more than one item of output
+                                    SqlDataReader reader = command.ExecuteReader();
+                                    reader.Read();
+                                    if (reader.GetString(0) == info.UserToken)
+                                    {
+                                        SetStatus(Conflict);
+                                        reader.Close();
+                                        return null;
+                                    }
+                                    oldTimeLimit = reader.GetInt32(1);
+                                    reader.Close();
+                                }
+                                catch (Exception)
+                                {
+                                    SetStatus(Forbidden);
+                                    return null;
+                                }
+                            }
+                            // Convert the pending game to an active one
+                            using (SqlCommand command = new SqlCommand(
+                                "UPDATE Games SET Player2=@UserToken,Board=@Board,TimeLimit=@TimeLimit,StartTime=@StartTime,GameState=1 WHERE GameID=@GameID", conn, trans))
+                            {
+                                command.Parameters.AddWithValue("@UserToken", info.UserToken);
+                                command.Parameters.AddWithValue("@Board", (new BoggleBoard()).ToString());
+                                command.Parameters.AddWithValue("@TimeLimit", (oldTimeLimit + info.TimeLimit) / 2);
+                                command.Parameters.AddWithValue("@StartTime", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture));
+                                command.Parameters.AddWithValue("@GameID", pendingGameID);
+
+                                try
+                                {
+                                    command.ExecuteNonQuery();
+                                }
+                                catch (Exception)
+                                {
+                                    SetStatus(Forbidden);
+                                    return null;
+                                }
+                            }
+
+                            JoinGameReturn output = new JoinGameReturn();
+                            output.GameID = pendingGameID.ToString();
+                            pendingGameID = -1;
+                            trans.Commit();
+                            SetStatus(Created);
+                            return output;
+                        }
                     }
-
-                    // Convert the pending game to an active one
-                    Game activeGame = new Game();
-                    activeGame.Player1 = pendingGame.Player1;
-                    activeGame.TimeLimit = pendingGame.TimeLimit;
-                    activeGame.GameState = "active";
-                    games.Remove(pendingGame.GameID);
-                    activeGame.GameID = pendingGame.GameID;
-                    games.Add(activeGame.GameID, activeGame);
-
-                    // Add the second user and average the time limit
-                    user.Score = 0;
-                    user.WordsPlayed = new List<Words>();
-                    activeGame.Player2 = user;
-                    activeGame.TimeLimit = (activeGame.TimeLimit + info.TimeLimit) / 2;
-                    activeGame.TimeLeft = activeGame.TimeLimit;
-                    activeGame.internalBoard = new BoggleBoard();
-                    activeGame.Board = activeGame.internalBoard.ToString();
-                    activeGame.StartTime = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-
-                    // Create a new pending game
-                    gameCounter++;
-                    pendingGame = new Game();
-                    pendingGame.GameState = "pending";
-                    pendingGame.GameID = gameCounter.ToString();
-                    games.Add(pendingGame.GameID, pendingGame);
-
-                    // Return info to user
-                    JoinGameReturn output = new JoinGameReturn();
-                    output.GameID = activeGame.GameID;
-                    SetStatus(Created);
-                    return output;
-                }
-                // If this is the first player in the pending game
-                else
-                {
-                    // Add the first user and set the time limit
-                    user.Score = 0;
-                    user.WordsPlayed = new List<Words>();
-                    pendingGame.Player1 = user;
-                    pendingGame.TimeLimit = info.TimeLimit;
-
-                    // Return info to user
-                    JoinGameReturn output = new JoinGameReturn();
-                    output.GameID = pendingGame.GameID;
-                    SetStatus(Accepted);
-                    return output;
                 }
             }
             else
@@ -182,22 +254,58 @@ namespace Boggle
         /// </summary>
         public void CancelJoinRequest(CancelJoinRequestInfo user)
         {
-            User tmpUser;
-            if (user.UserToken == null || !users.TryGetValue(user.UserToken, out tmpUser) || pendingGame.Player1 == null || user.UserToken != pendingGame.Player1.UserToken)
+            if (user.UserToken == null)
             {
                 SetStatus(Forbidden);
+                return;
             }
             else
             {
-                string id = pendingGame.GameID;
-                games.Remove(id);
+                using (SqlConnection conn = new SqlConnection(BoggleDB))
+                {
+                    conn.Open();
+                    using (SqlTransaction trans = conn.BeginTransaction())
+                    {
+                        // Fetch the UserToken of the player in a pending game
+                        using (SqlCommand command = new SqlCommand(
+                            "SELECT Player1 FROM Games WHERE GameState=0", conn, trans))
+                        {
+                            command.Parameters.AddWithValue("@UserToken", user.UserToken);
 
-                pendingGame = new Game();
-                pendingGame.GameState = "pending";
-                pendingGame.GameID = id;
-                games.Add(pendingGame.GameID, pendingGame);
-
-                SetStatus(OK);
+                            try
+                            {
+                                // If this UserToken is not the player in the pending game,
+                                // set status as Forbidden.
+                                string player1 = (string)command.ExecuteScalar();
+                                if (player1 == null || player1 != user.UserToken)
+                                {
+                                    throw new Exception();
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                SetStatus(Forbidden);
+                                return;
+                            }
+                        }
+                        // Remove the pending game from the database, because the player canceled it
+                        using (SqlCommand command = new SqlCommand(
+                            "DELETE FROM Games WHERE GameState=0", conn, trans))
+                        {
+                            try
+                            {
+                                command.ExecuteNonQuery();
+                            }
+                            catch (Exception)
+                            {
+                                SetStatus(Forbidden);
+                                return;
+                            }
+                        }
+                        trans.Commit();
+                        SetStatus(OK);
+                    }
+                }
             }
         }
 

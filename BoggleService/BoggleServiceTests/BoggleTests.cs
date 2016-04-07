@@ -301,7 +301,9 @@ namespace Boggle
             r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Conflict, r.Status);
 
+            // Remove the first user from the pending game
             r = client.DoPutAsync(d, "/games").Result;
+            Assert.AreEqual(OK, r.Status);
         }
 
         /// <summary>
@@ -322,7 +324,9 @@ namespace Boggle
             r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Conflict, r.Status);
 
+            // Remove the first user from the pending game
             r = client.DoPutAsync(d, "/games").Result;
+            Assert.AreEqual(OK, r.Status);
         }
 
         /// <summary>
