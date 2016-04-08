@@ -68,26 +68,6 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
 
-        /*[TestMethod]
-        public void TestMethod1()
-        {
-            Response r = client.DoGetAsync("/numbers?length={0}", "5").Result;
-            Assert.AreEqual(OK, r.Status);
-            Assert.AreEqual(5, r.Data.Count);
-            r = client.DoGetAsync("/numbers?length={0}", "-5").Result;
-            Assert.AreEqual(Forbidden, r.Status);
-        }
-
-        [TestMethod]
-        public void TestMethod2()
-        {
-            List<int> list = new List<int>();
-            list.Add(15);
-            Response r = client.DoPostAsync("/first", list).Result;
-            Assert.AreEqual(OK, r.Status);
-            Assert.AreEqual(15, r.Data);
-        }*/
-
         /// <summary>
         /// Has a null Nickname
         /// </summary>

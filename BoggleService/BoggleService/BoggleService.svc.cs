@@ -15,12 +15,6 @@ namespace Boggle
         private static readonly string BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
         private static int pendingGameID = -1;
 
-        private static readonly Dictionary<string, Game> games = new Dictionary<string, Game>();
-        private static readonly Dictionary<string, User> users = new Dictionary<string, User>();
-        private static Game pendingGame = new Game();
-        private static int gameCounter;
-        private static bool firstConstruction = true;
-
         /// <summary>
         /// The most recent call to SetStatus determines the response code used when
         /// an http response is sent.
