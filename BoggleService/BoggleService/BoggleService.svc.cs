@@ -80,6 +80,7 @@ namespace Boggle
                             catch (Exception)
                             {
                                 SetStatus(Forbidden);
+
                                 return null;
                             }
                         }
@@ -143,6 +144,7 @@ namespace Boggle
                                 catch (Exception)
                                 {
                                     SetStatus(Forbidden);
+
                                     return null;
                                 }
                             }
@@ -197,6 +199,7 @@ namespace Boggle
                                 }
                                 catch (Exception ex)
                                 {
+
                                     SetStatus(Forbidden);
                                     return null;
                                 }
@@ -224,6 +227,7 @@ namespace Boggle
                                 }
                                 catch (Exception)
                                 {
+
                                     SetStatus(Forbidden);
                                     return null;
                                 }
@@ -280,6 +284,7 @@ namespace Boggle
                             }
                             catch (Exception)
                             {
+
                                 SetStatus(Forbidden);
                                 return;
                             }
@@ -299,6 +304,7 @@ namespace Boggle
                             }
                             catch (Exception)
                             {
+
                                 SetStatus(Forbidden);
                                 return;
                             }
@@ -382,7 +388,7 @@ namespace Boggle
 
                         }
                     }
-                    if (TimeLeft < timelimit)
+                    if (TimeLeft <= 0)
                     {
                         using (SqlCommand command2 = new SqlCommand(
                                 "UPDATE Games SET GameState = 2 WHERE GameID = @GameID", conn, trans))
@@ -396,6 +402,7 @@ namespace Boggle
                             }
                             catch (Exception Ex)
                             {
+
                                 SetStatus(Forbidden);
                                 return null;
                             }
@@ -520,6 +527,7 @@ namespace Boggle
                         }
                         catch (Exception)
                         {
+
                             SetStatus(Forbidden);
                             return null;
                         }
@@ -573,6 +581,7 @@ namespace Boggle
                             if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
+                                reader.Close();
                                 return null;
                             }
                             while (reader.Read())
@@ -603,7 +612,7 @@ namespace Boggle
                                     long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                                     long start = (long)(starttime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                                     TimeLeft = timelimit - (int)(time - start);
-                                    if (TimeLeft < timelimit)
+                                    if (TimeLeft <= 0)
                                     {
                                         TimeLeft = 0;
                                         state = 2;
@@ -614,6 +623,7 @@ namespace Boggle
 
                                                 command2.ExecuteNonQuery();
                                                 SetStatus(Conflict);
+
                                                 return null;
 
                             }
@@ -637,6 +647,7 @@ namespace Boggle
                                     if (!reader.HasRows)
                                     {
                                         SetStatus(Forbidden);
+                                        reader.Close();
                                         return null;
                                     }
                                     while (reader.Read())
@@ -654,6 +665,7 @@ namespace Boggle
                                     if (!reader.HasRows)
                                     {
                                         SetStatus(Forbidden);
+                                        reader.Close();
                                         return null;
                                     }
                                     while (reader.Read())
@@ -690,6 +702,7 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
+                                    reader.Close();
                                     return null;
                                 }
                                 while (reader.Read())
@@ -708,6 +721,7 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
+                                    reader.Close();
                                     return null;
                                 }
                                 while (reader.Read())
@@ -780,6 +794,7 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
+                                    reader.Close();
                                     return null;
                                 }
                                 while(reader.Read())
@@ -800,6 +815,7 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
+                                    reader.Close();
                                     return null;
                                 }
                                 while (reader.Read())
