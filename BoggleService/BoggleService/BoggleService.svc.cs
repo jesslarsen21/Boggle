@@ -169,13 +169,7 @@ namespace Boggle
                             SetStatus(Accepted);
                             trans.Commit();
                             return output;
-                        }
-                                catch (Exception)
-                                {
-                                    SetStatus(Forbidden);
-                                    return null;
-                                }
-                            }
+
                         }
                         // If there is already one player in the pending game
                         else
@@ -380,50 +374,41 @@ namespace Boggle
                                 player2 = (string)reader["Player2"];
                                 boardstring = (string)reader["Board"];
 
-                                    long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                                    long start = (long)(starttime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                                long time = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                                long start = (long)(starttime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                                 TimeLeft = timelimit - (int)(time - start);
                             }
 
 
                         }
                     }
-                                    if (TimeLeft < timelimit)
-                                    {
-                                        using (SqlCommand command2 = new SqlCommand(
-                                                "UPDATE Games SET GameState = 2 WHERE GameID = @GameID", conn, trans))
-                                        {
-                                            command2.Parameters.AddWithValue("@GameID", gameID);
-                                            try
-                                            {
-                                                command2.ExecuteNonQuery();
-                                                SetStatus(Conflict);
-                                                return null;
-                                            }
+                    if (TimeLeft < timelimit)
+                    {
+                        using (SqlCommand command2 = new SqlCommand(
+                                "UPDATE Games SET GameState = 2 WHERE GameID = @GameID", conn, trans))
+                        {
+                            command2.Parameters.AddWithValue("@GameID", gameID);
+                            try
+                            {
+                                command2.ExecuteNonQuery();
+                                SetStatus(Conflict);
+                                return null;
+                            }
                             catch (Exception Ex)
-                                            {
-                                                SetStatus(Forbidden);
-                                                return null;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if ((player1 != info.UserToken) && (player2 != info.UserToken))
-                                        {
-                                            SetStatus(Forbidden);
-                                            return null;
-                                        }
-                                        timeremaining = TimeLeft;
-                                    }
-                                }
-                                else
-                                {
-                                    SetStatus(Conflict);
-                                    return null;
-                                }
+                            {
+                                SetStatus(Forbidden);
+                                return null;
                             }
                         }
+                    }
+                    else
+                    {
+                        if ((player1 != info.UserToken) && (player2 != info.UserToken))
+                        {
+                            SetStatus(Forbidden);
+                            return null;
+                        }
+                        timeremaining = TimeLeft;
                     }
                     // got through all tests to validate the ability to play a word. Game exists, user is in game, and the time is not up
                     // now we must get all words played by the users
@@ -547,7 +532,9 @@ namespace Boggle
                 }
             }
 
+            
         }
+    
 
 
         /// <summary>
