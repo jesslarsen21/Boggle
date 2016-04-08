@@ -353,7 +353,7 @@ namespace Boggle
                             }
                             while (reader.Read())
                             {
-                                DateTime starttime = (DateTime)reader["StartTime"];
+                                DateTime starttime = Convert.ToDateTime((string)reader["StartTime"]);
                                 int timelimit = (int)reader["TimeLimit"];
                                 int state = (int)reader["GameID"];
                                 player1 = (string)reader["Player1"];
@@ -565,9 +565,19 @@ namespace Boggle
                             }
                             while (reader.Read())
                             {
-                                DateTime starttime = (DateTime)reader["StartTime"];
-                                timelimit = (int)reader["TimeLimit"];
                                 state = (int)reader["GameState"];
+                                if (state == 0)
+                                {
+                                    //pending game
+                                    SetStatus(OK);
+                                    Game tmpGame = new Game();
+                                    tmpGame.GameState = "pending";
+                                    return tmpGame;
+                                }
+                                string date = reader["StartTime"].ToString();
+                                DateTime starttime = Convert.ToDateTime(date);
+                                timelimit = (int)reader["TimeLimit"];
+
                                 player1 = (string)reader["Player1"];
                                 player2 = (string)reader["Player2"];
                                 board = (string)reader["Board"];
@@ -601,17 +611,9 @@ namespace Boggle
                             }
                         }
                     }
-                    // you have all the information. now display what is needed for each state, and if brief or not.
-                    if (state == 0)
-                    {
-                        //pending game
-                        SetStatus(OK);
-                        Game tmpGame = new Game();
-                        tmpGame.GameState = "pending";
-                        return tmpGame;
-                    }
+                
                     // If the game is active or completed and Brief == "yes"
-                    else if (brief != null && brief.ToLower() == "yes")
+                    if (brief != null && brief.ToLower() == "yes")
                     {
                         Game tmpGame = new Game();
                         // Update game.TimeLeft
@@ -679,7 +681,6 @@ namespace Boggle
                                     trans.Commit();
                                     return null;
                                 }
-                                p1.Nickname = (string)reader["Nickname"];
                                 p1.Score = (int)reader["Score"];
                             }
                         }
