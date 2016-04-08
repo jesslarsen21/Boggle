@@ -68,11 +68,6 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
 
-        public void RunTestsSequentially()
-        {
-
-        }
-
         /// <summary>
         /// Has a null Nickname
         /// </summary>

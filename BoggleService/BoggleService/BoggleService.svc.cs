@@ -165,8 +165,6 @@ namespace Boggle
                                     // Executes the command and returns an SqlDataReader for reading more than one item of output
                                     SqlDataReader reader = command.ExecuteReader();
                                     reader.Read();
-                                    Console.WriteLine("\n" + reader.GetString(0));
-                                    Console.WriteLine(reader.GetInt32(1) + "\n");
                                     if (reader.GetString(0) == info.UserToken)
                                     {
                                         SetStatus(Conflict);
@@ -486,7 +484,7 @@ namespace Boggle
                     }
 
                     using (SqlCommand command = new SqlCommand(
-                        "UPDATE Words SET Score = Score + @WordScore WHERE UserToken = @UserToken", conn, trans))
+                        "UPDATE Users SET Score = Score + @WordScore WHERE UserToken = @UserToken", conn, trans))
                     {
                         command.Parameters.AddWithValue("@UserToken", info.UserToken);
                         command.Parameters.AddWithValue("@WordScore", Score);
