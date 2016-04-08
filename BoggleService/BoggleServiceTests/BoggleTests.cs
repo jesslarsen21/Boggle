@@ -715,7 +715,7 @@ namespace Boggle
             dynamic d = new ExpandoObject();
             d.Nickname = "Name";
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            d.TimeLimit = 30;
+            d.TimeLimit = 60;
             Response r1 = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
@@ -1008,7 +1008,7 @@ namespace Boggle
 
             System.Threading.Thread.Sleep(7000);
             r3 = client.DoGetAsync(url).Result;
-            Assert.AreEqual(null, res.Data.Board);
+            Assert.AreEqual(null, r3.Data.Board);
             Assert.AreEqual("completed", (string)r3.Data.GameState);
 
             r3 = client.DoGetAsync(url).Result;
