@@ -68,6 +68,11 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
 
+        public void RunTestsSequentially()
+        {
+
+        }
+
         /// <summary>
         /// Has a null Nickname
         /// </summary>
@@ -618,7 +623,12 @@ namespace Boggle
             Response r1 = client.DoPostAsync("/games", d).Result;
             Assert.IsNotNull(r1.Data.GameID);
 
-            
+            dynamic d2 = new ExpandoObject();
+            d2.Nickname = "Name";
+            d2.UserToken = client.DoPostAsync("/users", d2).Result.Data.UserToken;
+            d2.TimeLimit = 5;
+            r1 = client.DoPostAsync("/games", d2).Result;
+            Assert.IsNotNull(r1.Data.GameID);
 
             Response res = client.DoGetAsync("/games/" + r1.Data.GameID).Result;
             while (res.Data.GameState == "active")
