@@ -60,7 +60,6 @@ namespace Boggle
                 using (SqlConnection conn = new SqlConnection(BoggleDB))
                 {
                     conn.Open();
-
                     using (SqlTransaction trans = conn.BeginTransaction())
                     {
                         using (SqlCommand command = new SqlCommand(
@@ -154,6 +153,13 @@ namespace Boggle
                                 {
                                     // Executes the command and fetches the item in position [0, 0] of the output
                                     pendingGameID = (int)command.ExecuteScalar();
+
+                                    // Return info to user and commit database changes
+                                    JoinGameReturn output = new JoinGameReturn();
+                                    output.GameID = pendingGameID.ToString();
+                                    SetStatus(Accepted);
+                                    trans.Commit();
+                                    return output;
                                 }
                                 catch (Exception)
                                 {
@@ -161,13 +167,6 @@ namespace Boggle
                                     return null;
                                 }
                             }
-
-                            // Return info to user and commit database changes
-                            JoinGameReturn output = new JoinGameReturn();
-                            output.GameID = pendingGameID.ToString();
-                            SetStatus(Accepted);
-                            trans.Commit();
-                            return output;
                         }
                         // If there is already one player in the pending game
                         else
@@ -212,6 +211,13 @@ namespace Boggle
                                 try
                                 {
                                     command.ExecuteNonQuery();
+
+                                    JoinGameReturn output = new JoinGameReturn();
+                                    output.GameID = pendingGameID.ToString();
+                                    pendingGameID = -1;
+                                    trans.Commit();
+                                    SetStatus(Created);
+                                    return output;
                                 }
                                 catch (Exception)
                                 {
@@ -219,13 +225,6 @@ namespace Boggle
                                     return null;
                                 }
                             }
-
-                            JoinGameReturn output = new JoinGameReturn();
-                            output.GameID = pendingGameID.ToString();
-                            pendingGameID = -1;
-                            trans.Commit();
-                            SetStatus(Created);
-                            return output;
                         }
                     }
                 }
@@ -284,11 +283,16 @@ namespace Boggle
                         }
                         // Remove the pending game from the database, because the player canceled it
                         using (SqlCommand command = new SqlCommand(
-                            "DELETE FROM Games WHERE GameState=0", conn, trans))
+                            "DELETE FROM Games WHERE GameState=0 AND Player1=@UserToken", conn, trans))
                         {
+                            command.Parameters.AddWithValue("@UserToken", user.UserToken);
+
                             try
                             {
                                 command.ExecuteNonQuery();
+                                trans.Commit();
+                                SetStatus(OK);
+                                return;
                             }
                             catch (Exception)
                             {
@@ -296,8 +300,6 @@ namespace Boggle
                                 return;
                             }
                         }
-                        trans.Commit();
-                        SetStatus(OK);
                     }
                 }
             }
@@ -348,7 +350,6 @@ namespace Boggle
                             if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
-                                trans.Commit();
                                 return null;
                             }
                             while (reader.Read())
@@ -388,7 +389,6 @@ namespace Boggle
                                         if ((player1 != info.UserToken) && (player2 != info.UserToken))
                                         {
                                             SetStatus(Forbidden);
-                                            trans.Commit();
                                             return null;
                                         }
                                         timeremaining = TimeLeft;
@@ -397,7 +397,6 @@ namespace Boggle
                                 else
                                 {
                                     SetStatus(Conflict);
-                                    trans.Commit();
                                     return null;
                                 }
                             }
@@ -560,7 +559,6 @@ namespace Boggle
                             if (!reader.HasRows)
                             {
                                 SetStatus(Forbidden);
-                                trans.Commit();
                                 return null;
                             }
                             while (reader.Read())
@@ -630,7 +628,6 @@ namespace Boggle
                                     if (!reader.HasRows)
                                     {
                                         SetStatus(Forbidden);
-                                        trans.Commit();
                                         return null;
                                     }
                                     p1.Score = (int)reader["Score"];
@@ -645,7 +642,6 @@ namespace Boggle
                                     if (!reader.HasRows)
                                     {
                                         SetStatus(Forbidden);
-                                        trans.Commit();
                                         return null;
                                     }
                                     p2.Score = (int)reader["Score"];
@@ -678,7 +674,6 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
-                                    trans.Commit();
                                     return null;
                                 }
                                 p1.Score = (int)reader["Score"];
@@ -693,7 +688,6 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
-                                    trans.Commit();
                                     return null;
                                 }
                                 p2.Nickname = (string)reader["Nickname"];
@@ -763,7 +757,6 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
-                                    trans.Commit();
                                     return null;
                                 }
                                 p1.Nickname = (string)reader["Nickname"];
@@ -780,7 +773,6 @@ namespace Boggle
                                 if (!reader.HasRows)
                                 {
                                     SetStatus(Forbidden);
-                                    trans.Commit();
                                     return null;
                                 }
                                 p2.Nickname = (string)reader["Nickname"];
