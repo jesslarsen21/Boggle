@@ -51,7 +51,7 @@ namespace Boggle
         /// <summary>
         /// This is automatically run prior to all the tests to start the server
         /// </summary>
-        [ClassInitialize()]
+        //[ClassInitialize()]
         public static void StartIIS(TestContext testContext)
         {
             IISAgent.Start(@"/site:""BoggleService"" /apppool:""Clr4IntegratedAppPool"" /config:""..\..\..\.vs\config\applicationhost.config""");
@@ -60,7 +60,7 @@ namespace Boggle
         /// <summary>
         /// This is automatically run when all tests have completed to stop the server
         /// </summary>
-        [ClassCleanup()]
+        //[ClassCleanup()]
         public static void StopIIS()
         {
             IISAgent.Stop();
