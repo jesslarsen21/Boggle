@@ -82,6 +82,7 @@ namespace Boggle
                             }
                         }
                     }
+                    conn.Close();
                 }
                 return newUser;
             }
@@ -207,6 +208,7 @@ namespace Boggle
                             }
                         }
                     }
+                    conn.Close();
                 }
                 return output;
             }
@@ -281,6 +283,7 @@ namespace Boggle
                             }
                         }
                     }
+                    conn.Close();
                 }
             }
         }
@@ -503,6 +506,7 @@ namespace Boggle
                     SetStatus(OK);
                     trans.Commit();
                 }
+                conn.Close();
             }
             return wordReturn;
         }
@@ -557,6 +561,10 @@ namespace Boggle
                                     //pending game
                                     SetStatus(OK);
                                     tmpGame.GameState = "pending";
+                                    reader.Close();
+                                    trans.Commit();
+                                    conn.Close();
+                                    return tmpGame;
                                 }
                                 string date = reader["StartTime"].ToString();
                                 starttime = Convert.ToDateTime(date);
@@ -784,6 +792,7 @@ namespace Boggle
                         trans.Commit();
                     }
                 }
+                conn.Close();
             }
             return tmpGame;
         }
