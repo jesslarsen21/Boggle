@@ -45,24 +45,6 @@ namespace Boggle
     [TestClass]
     public class BoggleTests
     {
-        /*// <summary>
-        /// This is automatically run prior to all the tests to start the server
-        /// </summary>
-        [TestInitialize()]
-        public void StartIIS()
-        {
-            IISAgent.Start(@"/site:""BoggleService"" /apppool:""Clr4IntegratedAppPool"" /config:""..\..\..\.vs\config\applicationhost.config""");
-        }
-
-        /// <summary>
-        /// This is automatically run when all tests have completed to stop the server
-        /// </summary>
-        [TestCleanup()]
-        public void StopIIS()
-        {
-            IISAgent.Stop();
-        }*/
-
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
         private readonly string target = @"/site:""BoggleService"" /apppool:""Clr4IntegratedAppPool"" /config:""..\..\..\.vs\config\applicationhost.config""";
 
