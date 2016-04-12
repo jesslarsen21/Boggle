@@ -194,7 +194,7 @@ namespace Boggle
                                 try
                                 {
                                     command.ExecuteNonQuery();
-                                    
+
                                     output.GameID = pendingGameID.ToString();
                                     pendingGameID = -1;
                                     trans.Commit();
@@ -430,7 +430,7 @@ namespace Boggle
                     }
                     else
                     {
-                        foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "dictionary.txt"))
+                        foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + @"..\dictionary.txt"))
                         {
                             if (line.Contains(word))
                             {
@@ -510,7 +510,7 @@ namespace Boggle
             }
             return wordReturn;
         }
-    
+
 
 
         /// <summary>
@@ -754,7 +754,7 @@ namespace Boggle
                                     reader.Close();
                                     return null;
                                 }
-                                while(reader.Read())
+                                while (reader.Read())
                                 {
                                     p1.Nickname = (string)reader["Nickname"];
                                     p1.Score = (int)reader["Score"];

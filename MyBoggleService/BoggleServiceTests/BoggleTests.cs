@@ -899,7 +899,7 @@ namespace Boggle
             List<string> sevenLetter = new List<string>();
             List<string> longerLetter = new List<string>();
 
-            foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + "/dictionary.txt"))
+            foreach (string line in File.ReadLines(AppDomain.CurrentDomain.BaseDirectory + @"..\dictionary.txt"))
             {
                 if (board.CanBeFormed(line.Trim()))
                 {
@@ -936,7 +936,7 @@ namespace Boggle
                 dynamic d2 = new ExpandoObject();
                 d2.UserToken = UserToken1;
                 d2.Word = currWord;
-                Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
+                Response r3 = client.DoPutAsync(d2, " / games/" + gameID).Result;
                 Assert.AreEqual("1", (string)r3.Data.Score);
             }
             foreach (string currWord in fiveLetter)
