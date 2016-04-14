@@ -168,7 +168,9 @@ namespace Boggle
                             {
                                 ss.BeginSend("HTTP/1.1 409 Conflict\n", Ignore, null);
                                 ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                                ss.BeginSend("Content-Length: 0\n", Ignore, null);
                                 ss.BeginSend("\r\n", Ignore, null);
+                                ss.Shutdown();
                             }
                             else
                             {
@@ -184,7 +186,9 @@ namespace Boggle
                         {
                             ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
+                            ss.Shutdown();
                         }
                         break;
                     // CancelJoinRequest
@@ -202,7 +206,9 @@ namespace Boggle
                         {
                             ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
+                            ss.Shutdown();
                         }
                         break;
                     // PlayWord
@@ -216,7 +222,9 @@ namespace Boggle
                             {
                                 ss.BeginSend("HTTP/1.1 409 Conflict\n", Ignore, null);
                                 ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                                ss.BeginSend("Content-Length: 0\n", Ignore, null);
                                 ss.BeginSend("\r\n", Ignore, null);
+                                ss.Shutdown();
                             }
                             else
                             {
@@ -232,7 +240,9 @@ namespace Boggle
                         {
                             ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
+                            ss.Shutdown();
                         }
                         break;
                     // GameStatus
@@ -251,7 +261,9 @@ namespace Boggle
                         {
                             ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
+                            ss.Shutdown();
                         }
                         break;
                     default:
