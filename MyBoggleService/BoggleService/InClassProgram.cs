@@ -38,12 +38,15 @@ namespace Boggle
     class HttpRequest
     {
         private StringSocket ss;
+        private int methodNumber;
+        private string gameID;
+        private string brief;
         private int lineCount;
         private int contentLength;
 
         public HttpRequest(StringSocket stringSocket)
         {
-            this.ss = stringSocket;
+            ss = stringSocket;
             ss.BeginReceive(LineReceived, null);
         }
 
@@ -57,12 +60,43 @@ namespace Boggle
                 {
                     Regex r = new Regex(@"^(\S+)\s+(\S+)");
                     Match m = r.Match(s);
+                    string method = m.Groups[1].Value;
+                    string url = m.Groups[2].Value;
+
+                    if (method == "POST" && url.EndsWith("/users"))
+                    {
+                        methodNumber = 0;
+                    }
+                    else if (method == "POST" && url.EndsWith("/games"))
+                    {
+                        methodNumber = 1;
+                    }
+                    else if (method == "PUT" && url.EndsWith("/games"))
+                    {
+                        methodNumber = 2;
+                    }
+                    else if (method == "PUT" && url.Contains("/games") && !url.EndsWith("/games"))
+                    {
+                        methodNumber = 3;
+                        gameID = url.Substring(25);
+                    }
+                    else if (method == "GET" && url.Contains("/games") && !url.EndsWith("/games"))
+                    {
+                        methodNumber = 4;
+                        if (url.Contains("Brief"))
+                        {
+                            string[] words = url.Split('?');
+                            gameID = words[0].Substring(25);
+                            brief = words[1].Substring(6);
+                        }
+                    }
+
                     Console.WriteLine("Method: " + m.Groups[1].Value);
                     Console.WriteLine("URL: " + m.Groups[2].Value);
                 }
                 if (s.StartsWith("Content-Length:"))
                 {
-                    contentLength = Int32.Parse(s.Substring(16).Trim());
+                    contentLength = int.Parse(s.Substring(16).Trim());
                 }
                 if (s == "\r")
                 {
@@ -79,12 +113,11 @@ namespace Boggle
         {
             if (s != null)
             {
-                Person p = JsonConvert.DeserializeObject<Person>(s);
-                Console.WriteLine(p.Name + " " + p.Eyes);
+                dynamic obj = JsonConvert.DeserializeObject(s);
 
                 // Call service method
 
-                string result =
+                /*string result =
                     JsonConvert.SerializeObject(
                             new Person { Name = "June", Eyes = "Blue" },
                             new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
@@ -93,18 +126,12 @@ namespace Boggle
                 ss.BeginSend("Content-Type: application/json\n", Ignore, null);
                 ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
                 ss.BeginSend("\r\n", Ignore, null);
-                ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+                ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);*/
             }
         }
 
         private void Ignore(Exception e, object payload)
         {
         }
-    }
-
-    public class Person
-    {
-        public String Name { get; set; }
-        public String Eyes { get; set; }
     }
 }
