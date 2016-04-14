@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace SimpleWebServer
+namespace Boggle
 {
     public class WebServer
     {
@@ -21,8 +21,9 @@ namespace SimpleWebServer
 
         public WebServer()
         {
-            server = new TcpListener(IPAddress.Any, 54321);
+            server = new TcpListener(IPAddress.Any, 60000);
             server.Start();
+            
             server.BeginAcceptSocket(ConnectionRequested, null);
         }
 
