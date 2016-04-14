@@ -697,8 +697,8 @@ namespace Boggle
                                     }
                                     while (reader.Read())
                                     {
-                                        p1.Score = (int)reader["Score"];
-                                        p1.Nickname = (string)reader["Nickname"];
+                                        p2.Score = (int)reader["Score"];
+                                        p2.Nickname = (string)reader["Nickname"];
                                     }
                                 }
                             }
@@ -708,7 +708,7 @@ namespace Boggle
                             tmpGame.TimeLimit = timelimit;
                             tmpGame.TimeLeft = TimeLeft;
                             tmpGame.Player1 = p1;
-                            tmpGame.Player1 = p2;
+                            tmpGame.Player2 = p2;
                             SetStatus(OK);
                             trans.Commit();
                         }
@@ -800,7 +800,7 @@ namespace Boggle
                             tmpGame.TimeLimit = timelimit;
                             tmpGame.TimeLeft = 0;
                             tmpGame.Player1 = p1;
-                            tmpGame.Player1 = p2;
+                            tmpGame.Player2 = p2;
                             SetStatus(OK);
                             trans.Commit();
                         }
