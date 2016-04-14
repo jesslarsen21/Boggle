@@ -70,6 +70,7 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public string Board { get; set; }
         
+        public HttpStatusCode Status { get; set; }
 
         public BoggleBoard internalBoard { get; set; }
 
@@ -138,16 +139,23 @@ namespace Boggle
         public string Nickname { get; set; }
     }
 
+    [DataContract]
     public class CreateUserReturn
     {
+        [DataMember]
         public string UserToken { get; set; }
-
+        
         public HttpStatusCode Status { get; set; }
     }
 
     public class CancelJoinRequestInfo
     {
         public string UserToken { get; set; }
+    }
+    
+    public class CancelJoinRequestReturn
+    {
+        public HttpStatusCode Status { get; set; }
     }
 
     public class JoinGameInfo
@@ -157,9 +165,13 @@ namespace Boggle
         public int TimeLimit { get; set; }
     }
 
+    [DataContract]
     public class JoinGameReturn
     {
+        [DataMember]
         public string GameID { get; set; }
+
+        public HttpStatusCode Status { get; set; }
     }
 
     public class PlayWordInput
@@ -169,8 +181,12 @@ namespace Boggle
         public string Word { get; set; }
     }
 
+    [DataContract]
     public class PlayWordReturn
     {
+        [DataMember]
         public string Score { get; set; }
+
+        public HttpStatusCode Status { get; set; }
     }
 }
