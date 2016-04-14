@@ -94,7 +94,6 @@ namespace Boggle
         {
             if (user == null || user.Nickname == null || user.Nickname.Trim().Length == 0)
             {
-                SetStatus(Forbidden);
                 return null;
             }
             else
@@ -123,7 +122,6 @@ namespace Boggle
                             }
                             catch (Exception)
                             {
-                                newUser.Status = Forbidden;
                                 return null;
                             }
                         }
@@ -188,13 +186,12 @@ namespace Boggle
                                 }
                                 catch (Exception)
                                 {
-                                    SetStatus(Forbidden);
                                     return null;
                                 }
                             }
                             // Return info to user and commit database changes
                             output.GameID = pendingGameID.ToString();
-                            SetStatus(Accepted);
+                            output.Status = Accepted;
                             trans.Commit();
                         }
                         // If there is already one player in the pending game
@@ -214,16 +211,15 @@ namespace Boggle
                                     reader.Read();
                                     if (reader.GetString(0) == info.UserToken)
                                     {
-                                        SetStatus(Conflict);
+                                        output.Status = Conflict;
                                         reader.Close();
-                                        return null;
+                                        return output;
                                     }
                                     oldTimeLimit = reader.GetInt32(1);
                                     reader.Close();
                                 }
                                 catch (Exception)
                                 {
-                                    SetStatus(Forbidden);
                                     return null;
                                 }
                             }
@@ -244,11 +240,10 @@ namespace Boggle
                                     output.GameID = pendingGameID.ToString();
                                     pendingGameID = -1;
                                     trans.Commit();
-                                    SetStatus(Created);
+                                    output.Status = Created;
                                 }
                                 catch (Exception)
                                 {
-                                    SetStatus(Forbidden);
                                     return null;
                                 }
                             }
@@ -260,7 +255,6 @@ namespace Boggle
             }
             else
             {
-                SetStatus(Forbidden);
                 return null;
             }
         }
@@ -274,12 +268,14 @@ namespace Boggle
         /// Otherwise, removes UserToken from the pending game and responds
         /// with status 200 (OK).
         /// </summary>
-        public void CancelJoinRequest(CancelJoinRequestInfo user)
+        public CancelJoinRequestReturn CancelJoinRequest(CancelJoinRequestInfo user)
         {
+            CancelJoinRequestReturn output = new CancelJoinRequestReturn();
+
             if (user.UserToken == null)
             {
-                SetStatus(Forbidden);
-                return;
+                output.Status = Forbidden;
+                return output;
             }
             else
             {
@@ -306,8 +302,8 @@ namespace Boggle
                             }
                             catch (Exception)
                             {
-                                SetStatus(Forbidden);
-                                return;
+                                output.Status = Forbidden;
+                                return output;
                             }
                         }
                         // Remove the pending game from the database, because the player canceled it
@@ -320,18 +316,20 @@ namespace Boggle
                             {
                                 command.ExecuteNonQuery();
                                 trans.Commit();
-                                SetStatus(OK);
+                                output.Status = OK;
                             }
                             catch (Exception)
                             {
-                                SetStatus(Forbidden);
-                                return;
+                                output.Status = Forbidden;
+                                return output;
                             }
                         }
                     }
                     conn.Close();
                 }
             }
+            output.Status = Forbidden;
+            return output;
         }
 
         /// <summary>
@@ -362,7 +360,6 @@ namespace Boggle
             int TimeLeft = 0;
             if (info.Word == null || info.UserToken == null || gameID == null || info.Word.Trim().Length == 0)
             {
-                SetStatus(Forbidden);
                 return null;
             }
             int timeremaining;
@@ -380,7 +377,6 @@ namespace Boggle
                         {
                             if (!reader.HasRows)
                             {
-                                SetStatus(Forbidden);
                                 return null;
                             }
                             while (reader.Read())
@@ -389,8 +385,8 @@ namespace Boggle
                                 if (state != 1)
                                 {
                                     reader.Close();
-                                    SetStatus(Conflict);
-                                    return null;
+                                    wordReturn.Status = Conflict;
+                                    return wordReturn;
                                 }
                                 string date = reader["StartTime"].ToString();
                                 DateTime starttime = Convert.ToDateTime(date);
@@ -414,12 +410,11 @@ namespace Boggle
                             try
                             {
                                 command2.ExecuteNonQuery();
-                                SetStatus(Conflict);
-                                return null;
+                                wordReturn.Status = Conflict;
+                                return wordReturn;
                             }
                             catch (Exception)
                             {
-                                SetStatus(Forbidden);
                                 return null;
                             }
                         }
@@ -428,7 +423,6 @@ namespace Boggle
                     {
                         if ((player1 != info.UserToken) && (player2 != info.UserToken))
                         {
-                            SetStatus(Forbidden);
                             return null;
                         }
                         timeremaining = TimeLeft;
@@ -483,7 +477,7 @@ namespace Boggle
                                 if (p1Words.Contains(word) || p2Words.Contains(word) || word.Length < 3)
                                 {
                                     wordReturn.Score = "0";
-                                    SetStatus(OK);
+                                    wordReturn.Status = OK;
                                     return wordReturn;
                                 }
                                 if (word.Length == 3 || word.Length == 4)
@@ -527,7 +521,6 @@ namespace Boggle
                         }
                         catch (Exception)
                         {
-                            SetStatus(Forbidden);
                             return null;
                         }
                     }
@@ -543,13 +536,11 @@ namespace Boggle
                         }
                         catch (Exception)
                         {
-
-                            SetStatus(Forbidden);
                             return null;
                         }
                     }
 
-                    SetStatus(OK);
+                    wordReturn.Status = OK;
                     trans.Commit();
                 }
                 conn.Close();
@@ -595,7 +586,6 @@ namespace Boggle
                         {
                             if (!reader.HasRows)
                             {
-                                SetStatus(Forbidden);
                                 reader.Close();
                                 return null;
                             }
@@ -605,7 +595,7 @@ namespace Boggle
                                 if (state == 0)
                                 {
                                     //pending game
-                                    SetStatus(OK);
+                                    tmpGame.Status = OK;
                                     tmpGame.GameState = "pending";
                                     reader.Close();
                                     trans.Commit();
@@ -654,7 +644,6 @@ namespace Boggle
                             {
                                 if (!reader.HasRows)
                                 {
-                                    SetStatus(Forbidden);
                                     reader.Close();
                                     return null;
                                 }
@@ -672,7 +661,6 @@ namespace Boggle
                             {
                                 if (!reader.HasRows)
                                 {
-                                    SetStatus(Forbidden);
                                     reader.Close();
                                     return null;
                                 }
@@ -687,7 +675,7 @@ namespace Boggle
                         tmpGame.TimeLeft = TimeLeft;
                         tmpGame.Player1 = p1;
                         tmpGame.Player2 = p2;
-                        SetStatus(OK);
+                        tmpGame.Status = OK;
 
                         trans.Commit();
                     }
@@ -705,7 +693,6 @@ namespace Boggle
                             {
                                 if (!reader.HasRows)
                                 {
-                                    SetStatus(Forbidden);
                                     reader.Close();
                                     return null;
                                 }
@@ -724,7 +711,6 @@ namespace Boggle
                             {
                                 if (!reader.HasRows)
                                 {
-                                    SetStatus(Forbidden);
                                     reader.Close();
                                     return null;
                                 }
@@ -742,7 +728,7 @@ namespace Boggle
                         tmpGame.TimeLeft = TimeLeft;
                         tmpGame.Player1 = p1;
                         tmpGame.Player1 = p2;
-                        SetStatus(OK);
+                        tmpGame.Status = OK;
                         trans.Commit();
                     }
                     // Otherwise, if the game is completed and Brief != "yes"
@@ -796,7 +782,6 @@ namespace Boggle
                             {
                                 if (!reader.HasRows)
                                 {
-                                    SetStatus(Forbidden);
                                     reader.Close();
                                     return null;
                                 }
@@ -816,7 +801,6 @@ namespace Boggle
                             {
                                 if (!reader.HasRows)
                                 {
-                                    SetStatus(Forbidden);
                                     reader.Close();
                                     return null;
                                 }
@@ -834,7 +818,7 @@ namespace Boggle
                         tmpGame.TimeLeft = 0;
                         tmpGame.Player1 = p1;
                         tmpGame.Player1 = p2;
-                        SetStatus(OK);
+                        tmpGame.Status = OK;
                         trans.Commit();
                     }
                 }

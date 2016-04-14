@@ -60,7 +60,7 @@ namespace Boggle
         /// with status 200 (OK).
         /// </summary>
         [WebInvoke(Method = "PUT", UriTemplate = "/games")]
-        void CancelJoinRequest(CancelJoinRequestInfo user);
+        CancelJoinRequestReturn CancelJoinRequest(CancelJoinRequestInfo user);
 
         /// <summary>
         /// Play a word in a game.
