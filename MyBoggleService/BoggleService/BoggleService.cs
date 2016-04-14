@@ -12,6 +12,52 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        /// TcpListener
+        /// - Create a TcpListener object to listen on a given port
+        ///   TcpListener (IPAddress, Port)
+        /// - When an incoming connection is requested, invoke a callback method to initialize the connection
+        ///   IAsyncResult BeginAcceptSocket (Callback, Parameter)
+        /// - After the socket has been accepted, obtain the socket to secure the connection
+        ///   Socket EndAcceptSocket (IAsyncResult)
+        ///   
+        /// Socket
+        /// - Invoke a callback when bytes arrive
+        ///   IAsyncResult BeginReceive (… byte[] … Callback …)
+        /// - Return number of bytes received
+        ///   int EndReceive (IAsyncResult)
+        /// - Invoke a callback when bytes are sent
+        ///   IAsyncResult BeginSend (… byte[] … Callback …)
+        /// - Return number of bytes sent
+        ///   int EndSend (IAsyncResult)
+        ///   
+        /// StringSocket (wrapper for a completed Socket)
+        /// - Construct a StringSocket using a given encoding for the I/O byte stream
+        ///   StringSocket (Socket s, Encoding e)
+        /// - Sends the string and invokes the callback upon completion
+        ///   void BeginSend (String s, SendCallback callback, object payload)
+        ///   delegate void SendCallback (Exception e, object payload)
+        /// - Reads a complete line of text (if length is less than 0) and invokes the callback upon completion
+        ///   void BeginReceive (ReceiveCallback callback, object payload, int length = 0)
+        ///   delegate void ReceiveCallback (String s, Exception e, object payload)
+        /// - Shuts down and closes the StringSocket
+        ///   void Shutdown ()
+        ///   
+        /// General Requirements
+        /// - Can deal simultaneously with an arbitrary number of clients
+        /// - Receives from and sends to client simultaneously
+        /// - Each step of the outgoing process must be synchronized to prevent errors
+        /// 
+        /// Starting Server
+        /// - Create TcpListener object to listen on port 60000
+        /// 
+        /// Accepting a connection request
+        /// - Socket s = TcpListener.EndAcceptSocket(TcpListener.BeginAcceptSocket(null, null));
+        /// - StringSocket socket = new StringSocket (s, Encoding e); // Not sure what to do for the Encoding yet... JSON?
+        /// 
+        /// Accepting client requests
+        /// - Use a chooser method to determine which server method to call?
+        ///
+
         private static readonly string BoggleDB = ConfigurationManager.ConnectionStrings["BoggleDB"].ConnectionString;
         private static int pendingGameID = -1;
 
