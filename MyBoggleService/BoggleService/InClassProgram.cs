@@ -126,7 +126,8 @@ namespace Boggle
                 switch (methodNumber)
                 {
                     case 0:
-                        CreateUserInfo createUser = (CreateUserInfo)obj;
+                        CreateUserInfo createUser = new CreateUserInfo();
+                        createUser.Nickname = obj.Nickname;
                         CreateUserReturn output = boggleServer.CreateUser(createUser);
                         string result = JsonConvert.SerializeObject(output);
                         ss.BeginSend("HTTP/1.1 201 Created\n", Ignore, null);
