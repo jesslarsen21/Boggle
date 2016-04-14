@@ -134,17 +134,11 @@ namespace Boggle
                 switch (methodNumber)
                 {
                     case 0:
-                        CreateUserInfo createUser = new CreateUserInfo();
-                        createUser.Nickname = obj.Nickname;
-                        CreateUserReturn out0 = boggleServer.CreateUser(createUser);
-                        if (out0 == null)
+                        try
                         {
-                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("\r\n", Ignore, null);
-                        }
-                        else
-                        {
+                            CreateUserInfo createUser = new CreateUserInfo();
+                            createUser.Nickname = obj.Nickname;
+                            CreateUserReturn out0 = boggleServer.CreateUser(createUser);
                             string result0 = JsonConvert.SerializeObject(out0);
                             ss.BeginSend(GetHttpCode(out0.Status), Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
@@ -152,32 +146,41 @@ namespace Boggle
                             ss.BeginSend("\r\n", Ignore, null);
                             ss.BeginSend(result0, (ex, py) => { ss.Shutdown(); }, null);
                         }
-                        break;
-                    case 1:
-                        JoinGameInfo joinGame = new JoinGameInfo();
-                        joinGame.TimeLimit = obj.TimeLimit;
-                        joinGame.UserToken = obj.UserToken;
-                        JoinGameReturn out1 = boggleServer.JoinGame(joinGame);
-                        if (out1 == null)
+                        catch (Exception)
                         {
                             ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
                         }
-                        else if (out1.Status == HttpStatusCode.Conflict)
+                        break;
+                    case 1:
+                        try
                         {
-                            ss.BeginSend("HTTP/1.1 409 Conflict\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("\r\n", Ignore, null);
+                            JoinGameInfo joinGame = new JoinGameInfo();
+                            joinGame.TimeLimit = obj.TimeLimit;
+                            joinGame.UserToken = obj.UserToken;
+                            JoinGameReturn out1 = boggleServer.JoinGame(joinGame);
+                            if (out1.Status == HttpStatusCode.Conflict)
+                            {
+                                ss.BeginSend("HTTP/1.1 409 Conflict\n", Ignore, null);
+                                ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                                ss.BeginSend("\r\n", Ignore, null);
+                            }
+                            else
+                            {
+                                string result1 = JsonConvert.SerializeObject(out1);
+                                ss.BeginSend(GetHttpCode(out1.Status), Ignore, null);
+                                ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                                ss.BeginSend("Content-Length: " + result1.Length + "\n", Ignore, null);
+                                ss.BeginSend("\r\n", Ignore, null);
+                                ss.BeginSend(result1, (ex, py) => { ss.Shutdown(); }, null);
+                            }
                         }
-                        else
+                        catch (Exception)
                         {
-                            string result1 = JsonConvert.SerializeObject(out1);
-                            ss.BeginSend(GetHttpCode(out1.Status), Ignore, null);
+                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
                             ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: " + result1.Length + "\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
-                            ss.BeginSend(result1, (ex, py) => { ss.Shutdown(); }, null);
                         }
                         break;
                     case 2:
