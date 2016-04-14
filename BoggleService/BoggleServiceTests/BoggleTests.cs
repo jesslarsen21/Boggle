@@ -24,10 +24,13 @@ namespace Boggle
         /// </summary>
         public static void Start(string arguments)
         {
-            ProcessStartInfo info = new ProcessStartInfo(Properties.Resources.IIS_EXECUTABLE, arguments);
-            info.WindowStyle = ProcessWindowStyle.Minimized;
-            info.UseShellExecute = false;
-            process = Process.Start(info);
+            if (process == null)
+            {
+                ProcessStartInfo info = new ProcessStartInfo(Properties.Resources.IIS_EXECUTABLE, arguments);
+                info.WindowStyle = ProcessWindowStyle.Minimized;
+                info.UseShellExecute = false;
+                process = Process.Start(info);
+            }
         }
 
         /// <summary>
@@ -45,11 +48,11 @@ namespace Boggle
     [TestClass]
     public class BoggleTests
     {
-        /*// <summary>
+        /// <summary>
         /// This is automatically run prior to all the tests to start the server
         /// </summary>
-        [TestInitialize()]
-        public void StartIIS()
+        [ClassInitialize()]
+        public static void StartIIS(TestContext testContext)
         {
             IISAgent.Start(@"/site:""BoggleService"" /apppool:""Clr4IntegratedAppPool"" /config:""..\..\..\.vs\config\applicationhost.config""");
         }
@@ -57,145 +60,37 @@ namespace Boggle
         /// <summary>
         /// This is automatically run when all tests have completed to stop the server
         /// </summary>
-        [TestCleanup()]
-        public void StopIIS()
+        [ClassCleanup()]
+        public static void StopIIS()
         {
-            IISAgent.Stop();
-        }*/
-
-        private RestTestClient client = new RestTestClient("http://localhost:60000/");
-        private readonly string target = @"/site:""BoggleService"" /apppool:""Clr4IntegratedAppPool"" /config:""..\..\..\.vs\config\applicationhost.config""";
-
-        [TestMethod]
-        public void RunTestsSerially()
-        {
-            IISAgent.Start(target);
-            CreateUserTest1();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CreateUserTest2();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CreateUserTest3();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CreateUserTest4();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CreateUserTest5();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CreateUserTest6();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CreateUserTest7();
-            IISAgent.Stop();
-
-            IISAgent.Start(target);
-            JoinGameTest1();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest2();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest3();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest4();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest5();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest6();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest7();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest8();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest9();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            JoinGameTest10();
-            IISAgent.Stop();
-
-            IISAgent.Start(target);
-            CancelJoinRequestTest1();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CancelJoinRequestTest2();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CancelJoinRequestTest3();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CancelJoinRequestTest4();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CancelJoinRequestTest5();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            CancelJoinRequestTest6();
-            IISAgent.Stop();
-
-            IISAgent.Start(target);
-            PlayWordTest1();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest2();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest3();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest4();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest5();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest6();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest7();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest8();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest9();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest10();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest11();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest12();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest13();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            PlayWordTest14();
-            IISAgent.Stop();
-
-            IISAgent.Start(target);
-            GameStatusTest1();
-            IISAgent.Stop();
-            IISAgent.Start(target);
-            GameStatusTest2();
             IISAgent.Stop();
         }
+
+        private RestTestClient client = new RestTestClient("http://localhost:60000/");
+
+        /*[TestMethod]
+        public void TestMethod1()
+        {
+            Response r = client.DoGetAsync("/numbers?length={0}", "5").Result;
+            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(5, r.Data.Count);
+            r = client.DoGetAsync("/numbers?length={0}", "-5").Result;
+            Assert.AreEqual(Forbidden, r.Status);
+        }
+        [TestMethod]
+        public void TestMethod2()
+        {
+            List<int> list = new List<int>();
+            list.Add(15);
+            Response r = client.DoPostAsync("/first", list).Result;
+            Assert.AreEqual(OK, r.Status);
+            Assert.AreEqual(15, r.Data);
+        }*/
 
         /// <summary>
         /// Has a null Nickname
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest1()
         {
             dynamic d = new ExpandoObject();
@@ -207,7 +102,7 @@ namespace Boggle
         /// <summary>
         /// Has an empty Nickname
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest2()
         {
             dynamic d = new ExpandoObject();
@@ -219,7 +114,7 @@ namespace Boggle
         /// <summary>
         /// Has a Nickname that will trim to empty
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest3()
         {
             dynamic d = new ExpandoObject();
@@ -231,7 +126,7 @@ namespace Boggle
         /// <summary>
         /// Has a Nickname that will trim to empty
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest4()
         {
             dynamic d = new ExpandoObject();
@@ -243,7 +138,7 @@ namespace Boggle
         /// <summary>
         /// Has a valid name
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest5()
         {
             dynamic d = new ExpandoObject();
@@ -256,7 +151,7 @@ namespace Boggle
         /// <summary>
         /// Asserts that generated UserTokens are unique
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest6()
         {
             dynamic d = new ExpandoObject();
@@ -264,7 +159,7 @@ namespace Boggle
             Response r1 = client.DoPostAsync("/users", d).Result;
             Assert.AreEqual(Created, r1.Status);
             Assert.IsNotNull(r1.Data.UserToken);
-            
+
             Response r2 = client.DoPostAsync("/users", d).Result;
             Assert.AreEqual(Created, r2.Status);
             Assert.IsNotNull(r2.Data.UserToken);
@@ -275,7 +170,7 @@ namespace Boggle
         /// <summary>
         /// Asserts that generated UserTokens are unique
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CreateUserTest7()
         {
             dynamic d = new ExpandoObject();
@@ -296,7 +191,7 @@ namespace Boggle
         /// <summary>
         /// Has a null UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest1()
         {
             dynamic d = new ExpandoObject();
@@ -309,7 +204,7 @@ namespace Boggle
         /// <summary>
         /// Has an invalid UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest2()
         {
             dynamic d = new ExpandoObject();
@@ -322,7 +217,7 @@ namespace Boggle
         /// <summary>
         /// Has an invalid UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest3()
         {
             dynamic d = new ExpandoObject();
@@ -335,7 +230,7 @@ namespace Boggle
         /// <summary>
         /// Has a null TimeLimit
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest4()
         {
             dynamic d = new ExpandoObject();
@@ -348,7 +243,7 @@ namespace Boggle
         /// <summary>
         /// Has a negative TimeLimit
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest5()
         {
             dynamic d = new ExpandoObject();
@@ -362,7 +257,7 @@ namespace Boggle
         /// <summary>
         /// Has too small of a TimeLimit
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest6()
         {
             dynamic d = new ExpandoObject();
@@ -376,7 +271,7 @@ namespace Boggle
         /// <summary>
         /// Has too large of a TimeLimit
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest7()
         {
             dynamic d = new ExpandoObject();
@@ -391,7 +286,7 @@ namespace Boggle
         /// Tries to add the same user to a game twice.
         /// Also tests the boundary case of TimeLimit = 5
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest8()
         {
             dynamic d = new ExpandoObject();
@@ -405,16 +300,14 @@ namespace Boggle
             r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Conflict, r.Status);
 
-            // Remove the first user from the pending game
             r = client.DoPutAsync(d, "/games").Result;
-            Assert.AreEqual(OK, r.Status);
         }
 
         /// <summary>
         /// Tries to add the same user to a game twice.
         /// Also tests the boundary case of TimeLimit = 120
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest9()
         {
             dynamic d = new ExpandoObject();
@@ -428,15 +321,13 @@ namespace Boggle
             r = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Conflict, r.Status);
 
-            // Remove the first user from the pending game
             r = client.DoPutAsync(d, "/games").Result;
-            Assert.AreEqual(OK, r.Status);
         }
 
         /// <summary>
         /// Adds two different users to a game.
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void JoinGameTest10()
         {
             dynamic d = new ExpandoObject();
@@ -458,7 +349,7 @@ namespace Boggle
         /// <summary>
         /// Has a null UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CancelJoinRequestTest1()
         {
             dynamic d = new ExpandoObject();
@@ -470,7 +361,7 @@ namespace Boggle
         /// <summary>
         /// Has an invalid UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CancelJoinRequestTest2()
         {
             dynamic d = new ExpandoObject();
@@ -482,7 +373,7 @@ namespace Boggle
         /// <summary>
         /// Has an invalid UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CancelJoinRequestTest3()
         {
             dynamic d = new ExpandoObject();
@@ -494,7 +385,7 @@ namespace Boggle
         /// <summary>
         /// UserToken not in pending game
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CancelJoinRequestTest4()
         {
             dynamic d = new ExpandoObject();
@@ -507,7 +398,7 @@ namespace Boggle
         /// <summary>
         /// UserToken not in pending game (game already active)
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CancelJoinRequestTest5()
         {
             dynamic d = new ExpandoObject();
@@ -532,7 +423,7 @@ namespace Boggle
         /// <summary>
         /// Removes UserToken from pending game
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void CancelJoinRequestTest6()
         {
             dynamic d = new ExpandoObject();
@@ -550,7 +441,7 @@ namespace Boggle
         /// <summary>
         /// Missing GameID
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest1()
         {
             dynamic d = new ExpandoObject();
@@ -577,7 +468,7 @@ namespace Boggle
         /// <summary>
         /// Invalid GameID
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest2()
         {
             dynamic d = new ExpandoObject();
@@ -604,7 +495,7 @@ namespace Boggle
         /// <summary>
         /// Null UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest3()
         {
             dynamic d = new ExpandoObject();
@@ -631,7 +522,7 @@ namespace Boggle
         /// <summary>
         /// Invalid UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest4()
         {
             dynamic d = new ExpandoObject();
@@ -658,7 +549,7 @@ namespace Boggle
         /// <summary>
         /// Invalid UserToken
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest5()
         {
             dynamic d = new ExpandoObject();
@@ -685,7 +576,7 @@ namespace Boggle
         /// <summary>
         /// Invalid UserToken (user not in game)
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest6()
         {
             dynamic d = new ExpandoObject();
@@ -712,7 +603,7 @@ namespace Boggle
         /// <summary>
         /// Game still pending
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest7()
         {
             dynamic d = new ExpandoObject();
@@ -722,7 +613,7 @@ namespace Boggle
             Response r1 = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
-            
+
             d.Word = "word";
             string gameID = r1.Data.GameID;
             Response r = client.DoPutAsync(d, "/games/" + gameID).Result;
@@ -732,7 +623,7 @@ namespace Boggle
         /// <summary>
         /// Game already completed
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest8()
         {
             dynamic d = new ExpandoObject();
@@ -742,12 +633,7 @@ namespace Boggle
             Response r1 = client.DoPostAsync("/games", d).Result;
             Assert.IsNotNull(r1.Data.GameID);
 
-            dynamic d2 = new ExpandoObject();
-            d2.Nickname = "Name";
-            d2.UserToken = client.DoPostAsync("/users", d2).Result.Data.UserToken;
-            d2.TimeLimit = 5;
-            r1 = client.DoPostAsync("/games", d2).Result;
-            Assert.IsNotNull(r1.Data.GameID);
+
 
             Response res = client.DoGetAsync("/games/" + r1.Data.GameID).Result;
             while (res.Data.GameState == "active")
@@ -766,7 +652,7 @@ namespace Boggle
         /// <summary>
         /// Word is null
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest9()
         {
             dynamic d = new ExpandoObject();
@@ -792,7 +678,7 @@ namespace Boggle
         /// <summary>
         /// Word is empty
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest10()
         {
             dynamic d = new ExpandoObject();
@@ -818,13 +704,13 @@ namespace Boggle
         /// <summary>
         /// Duplicate words (both invalid)
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest11()
         {
             dynamic d = new ExpandoObject();
             d.Nickname = "Name";
             d.UserToken = client.DoPostAsync("/users", d).Result.Data.UserToken;
-            d.TimeLimit = 60;
+            d.TimeLimit = 30;
             Response r1 = client.DoPostAsync("/games", d).Result;
             Assert.AreEqual(Accepted, r1.Status);
             Assert.IsNotNull(r1.Data.GameID);
@@ -851,7 +737,7 @@ namespace Boggle
         /// <summary>
         /// Duplicate words (both invalid, different cases)
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest12()
         {
             dynamic d = new ExpandoObject();
@@ -882,7 +768,7 @@ namespace Boggle
         /// <summary>
         /// testing the score of all playable words.
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest13()
         {
             dynamic d = new ExpandoObject();
@@ -905,7 +791,7 @@ namespace Boggle
             Response res = client.DoGetAsync("/games/{0}", (string)r1.Data.GameID, "no").Result;
             Assert.AreEqual(OK, res.Status);
 
-            
+
 
             string Board = res.Data.Board;
 
@@ -922,7 +808,7 @@ namespace Boggle
                 if (board.CanBeFormed(line.Trim()))
                 {
                     var word = line.Trim();
-                    if(word.Length < 3)
+                    if (word.Length < 3)
                     {
                         twoOrLessLetter.Add(word);
                     }
@@ -938,7 +824,7 @@ namespace Boggle
                     {
                         sixLetter.Add(word);
                     }
-                    else if(word.Length == 7)
+                    else if (word.Length == 7)
                     {
                         sevenLetter.Add(word);
                     }
@@ -989,7 +875,7 @@ namespace Boggle
                 Response r3 = client.DoPutAsync(d2, "/games/" + gameID).Result;
                 Assert.AreEqual("11", (string)r3.Data.Score);
             }
-            
+
             foreach (string currWord in threeOrFourLetter)
             {
                 dynamic d2 = new ExpandoObject();
@@ -1032,7 +918,7 @@ namespace Boggle
         /// <summary>
         /// testing playing a word after time has run out, even if you don't ever request the game status.
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void PlayWordTest14()
         {
             dynamic d = new ExpandoObject();
@@ -1049,7 +935,7 @@ namespace Boggle
             Assert.IsNotNull(r2.Data.GameID);
 
             Assert.AreEqual(r1.Data.GameID, r2.Data.GameID);
-            
+
             System.Threading.Thread.Sleep(15000);
 
             d.Word = "word";
@@ -1058,11 +944,11 @@ namespace Boggle
             Assert.AreEqual(Conflict, r.Status);
 
         }
-        
+
         /// <summary>
         /// first gamestatus test. Will test pending game state, and also invalid gameID
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void GameStatusTest1()
         {
             //Add a user, and start a pending game.
@@ -1092,7 +978,7 @@ namespace Boggle
         /// <summary>
         /// Testing the brief = 
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void GameStatusTest2()
         {
             //Add a user, and start a pending game.
@@ -1117,7 +1003,7 @@ namespace Boggle
 
             System.Threading.Thread.Sleep(7000);
             r3 = client.DoGetAsync(url).Result;
-            Assert.AreEqual(null, r3.Data.Board);
+            Assert.AreEqual(null, res.Data.Board);
             Assert.AreEqual("completed", (string)r3.Data.GameState);
 
             r3 = client.DoGetAsync(url).Result;
