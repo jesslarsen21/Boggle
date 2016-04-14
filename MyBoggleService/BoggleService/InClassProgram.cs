@@ -18,11 +18,13 @@ namespace Boggle
         }
 
         private TcpListener server;
+        private BoggleService boggleServer;
 
         public WebServer()
         {
             server = new TcpListener(IPAddress.Any, 60000);
             server.Start();
+            boggleServer = new BoggleService();
             server.BeginAcceptSocket(ConnectionRequested, null);
         }
 
@@ -30,7 +32,7 @@ namespace Boggle
         {
             Socket s = server.EndAcceptSocket(ar);
             server.BeginAcceptSocket(ConnectionRequested, null);
-            new HttpRequest(new StringSocket(s, new UTF8Encoding()));
+            new HttpRequest(new StringSocket(s, new UTF8Encoding()), boggleServer);
         }
     }
 
@@ -40,12 +42,14 @@ namespace Boggle
         private int methodNumber;
         private string gameID;
         private string brief;
+        private BoggleService boggleServer;
         private int lineCount;
         private int contentLength;
 
-        public HttpRequest(StringSocket stringSocket)
+        public HttpRequest(StringSocket stringSocket, BoggleService boggleServer)
         {
             ss = stringSocket;
+            this.boggleServer = boggleServer;
             ss.BeginReceive(LineReceived, null);
         }
 
@@ -88,10 +92,15 @@ namespace Boggle
                             gameID = words[0].Substring(25);
                             brief = words[1].Substring(6);
                         }
+                        else
+                        {
+                            gameID = url.Substring(25);
+                        }
                     }
-
-                    Console.WriteLine("Method: " + m.Groups[1].Value);
-                    Console.WriteLine("URL: " + m.Groups[2].Value);
+                    else
+                    {
+                        ss.BeginSend("HTTP/1.1 400 Bad Request\n", Ignore, null);
+                    }
                 }
                 if (s.StartsWith("Content-Length:"))
                 {
@@ -114,6 +123,33 @@ namespace Boggle
             {
                 dynamic obj = JsonConvert.DeserializeObject(s);
 
+                switch (methodNumber)
+                {
+                    case 0:
+                        CreateUserInfo createUser = (CreateUserInfo)obj;
+                        CreateUserReturn output = boggleServer.CreateUser(createUser);
+                        string result = JsonConvert.SerializeObject(output);
+                        ss.BeginSend("HTTP/1.1 201 Created\n", Ignore, null);
+                        ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                        ss.BeginSend("Content-Length: " + result.Length + "\n", Ignore, null);
+                        ss.BeginSend("\r\n", Ignore, null);
+                        ss.BeginSend(result, (ex, py) => { ss.Shutdown(); }, null);
+                        break;
+                    case 1:
+                        JoinGameInfo joinGame = (JoinGameInfo)obj;
+                        break;
+                    case 2:
+                        CancelJoinRequestInfo cancelGame = (CancelJoinRequestInfo)obj;
+                        break;
+                    case 3:
+                        PlayWordInput playWord = (PlayWordInput)obj;
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        ss.BeginSend("HTTP/1.1 400 Bad Request\n", Ignore, null);
+                        break;
+                }
                 // Call service method
 
                 /*string result =
