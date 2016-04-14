@@ -109,7 +109,14 @@ namespace Boggle
                 }
                 if (s == "\r")
                 {
-                    ss.BeginReceive(ContentReceived, null, contentLength);
+                    if (methodNumber == 4)
+                    {
+                        ContentReceived(s, null, null);
+                    }
+                    else
+                    {
+                        ss.BeginReceive(ContentReceived, null, contentLength);
+                    }
                 }
                 else
                 {
