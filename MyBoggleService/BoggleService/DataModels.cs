@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 
 namespace Boggle
@@ -140,6 +141,8 @@ namespace Boggle
     public class CreateUserReturn
     {
         public string UserToken { get; set; }
+
+        public HttpStatusCode Status { get; set; }
     }
 
     public class CancelJoinRequestInfo

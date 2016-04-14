@@ -118,12 +118,12 @@ namespace Boggle
                             {
                                 command.ExecuteNonQuery();
 
-                                SetStatus(Created);
+                                newUser.Status = Created;
                                 trans.Commit();
                             }
                             catch (Exception)
                             {
-                                SetStatus(Forbidden);
+                                newUser.Status = Forbidden;
                                 return null;
                             }
                         }
