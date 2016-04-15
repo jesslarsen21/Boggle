@@ -297,8 +297,6 @@ namespace Boggle
                             using (SqlCommand command = new SqlCommand(
                                 "SELECT Player1 FROM Games WHERE GameState=0", conn, trans))
                             {
-                                command.Parameters.AddWithValue("@UserToken", user.UserToken);
-
                                 try
                                 {
                                     // If this UserToken is not the player in the pending game,
@@ -326,6 +324,7 @@ namespace Boggle
                                     command.ExecuteNonQuery();
                                     trans.Commit();
                                     output.Status = OK;
+                                    pendingGameID = -1;
                                 }
                                 catch (Exception)
                                 {
@@ -335,10 +334,9 @@ namespace Boggle
                             }
                         }
                         conn.Close();
+                        return output;
                     }
                 }
-                output.Status = Forbidden;
-                return output;
             }
         }
 
