@@ -66,6 +66,7 @@ namespace Boggle
                     Match m = r.Match(s);
                     string method = m.Groups[1].Value;
                     string url = m.Groups[2].Value;
+                    url.ToLower();
 
                     if (method == "POST" && url.EndsWith("/users"))
                     {
@@ -87,7 +88,7 @@ namespace Boggle
                     else if (method == "GET" && url.Contains("/games") && !url.EndsWith("/games"))
                     {
                         methodNumber = 4;
-                        if (url.Contains("Brief"))
+                        if (url.Contains("brief"))
                         {
                             string[] words = url.Split('?');
                             gameID = words[0].Substring(25);
@@ -100,7 +101,7 @@ namespace Boggle
                     }
                     else
                     {
-                        ss.BeginSend("HTTP/1.1 400 Bad Request\n", Ignore, null);
+                        ss.BeginSend("HTTP/1.1 400 Bad Request \r\n", Ignore, null);
                     }
                 }
                 if (s.StartsWith("Content-Length:"))
@@ -142,18 +143,18 @@ namespace Boggle
                             CreateUserReturn out0 = boggleServer.CreateUser(createUser);
                             string result0 = JsonConvert.SerializeObject(out0);
                             ss.BeginSend(GetHttpCode(out0.Status), Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: " + result0.Length + "\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json \r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: " + result0.Length + " \r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
                             ss.BeginSend(result0, (ex, py) => { ss.Shutdown(); }, null);
                         }
                         catch (Exception)
                         {
-                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                            ss.BeginSend("HTTP/1.1 403 Forbidden \r\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json \r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
-                            ss.Shutdown();
+                            ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                         }
                         break;
                     // JoinGame
@@ -166,29 +167,29 @@ namespace Boggle
                             JoinGameReturn out1 = boggleServer.JoinGame(joinGame);
                             if (out1.Status == HttpStatusCode.Conflict)
                             {
-                                ss.BeginSend("HTTP/1.1 409 Conflict\n", Ignore, null);
-                                ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                                ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                                ss.BeginSend("HTTP/1.1 409 Conflict\r\n", Ignore, null);
+                                ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                                ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                                 ss.BeginSend("\r\n", Ignore, null);
-                                ss.Shutdown();
+                                ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                             }
                             else
                             {
                                 string result1 = JsonConvert.SerializeObject(out1);
                                 ss.BeginSend(GetHttpCode(out1.Status), Ignore, null);
-                                ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                                ss.BeginSend("Content-Length: " + result1.Length + "\n", Ignore, null);
+                                ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                                ss.BeginSend("Content-Length: " + result1.Length + "\r\n", Ignore, null);
                                 ss.BeginSend("\r\n", Ignore, null);
                                 ss.BeginSend(result1, (ex, py) => { ss.Shutdown(); }, null);
                             }
                         }
                         catch (Exception)
                         {
-                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                            ss.BeginSend("HTTP/1.1 403 Forbidden\r\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
-                            ss.Shutdown();
+                            ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                         }
                         break;
                     // CancelJoinRequest
@@ -199,16 +200,16 @@ namespace Boggle
                             cancelGame.UserToken = obj.UserToken;
                             CancelJoinRequestReturn out2 = boggleServer.CancelJoinRequest(cancelGame);
                             ss.BeginSend(GetHttpCode(out2.Status), Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
                         }
                         catch (Exception)
                         {
-                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                            ss.BeginSend("HTTP/1.1 403 Forbidden\r\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
-                            ss.Shutdown();
+                            ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                         }
                         break;
                     // PlayWord
@@ -220,29 +221,29 @@ namespace Boggle
                             PlayWordReturn out3 = boggleServer.PlayWord(gameID, playWord);
                             if (out3.Status == HttpStatusCode.Conflict)
                             {
-                                ss.BeginSend("HTTP/1.1 409 Conflict\n", Ignore, null);
-                                ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                                ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                                ss.BeginSend("HTTP/1.1 409 Conflict\r\n", Ignore, null);
+                                ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                                ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                                 ss.BeginSend("\r\n", Ignore, null);
-                                ss.Shutdown();
+                                ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                             }
                             else
                             {
                                 string result3 = JsonConvert.SerializeObject(out3);
                                 ss.BeginSend(GetHttpCode(out3.Status), Ignore, null);
-                                ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                                ss.BeginSend("Content-Length: " + result3.Length + "\n", Ignore, null);
+                                ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                                ss.BeginSend("Content-Length: " + result3.Length + "\r\n", Ignore, null);
                                 ss.BeginSend("\r\n", Ignore, null);
                                 ss.BeginSend(result3, (ex, py) => { ss.Shutdown(); }, null);
                             }
                         }
                         catch (Exception)
                         {
-                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                            ss.BeginSend("HTTP/1.1 403 Forbidden\r\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
-                            ss.Shutdown();
+                            ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                         }
                         break;
                     // GameStatus
@@ -252,22 +253,24 @@ namespace Boggle
                             Game out4 = boggleServer.GameStatus(gameID, brief);
                             string result4 = JsonConvert.SerializeObject(out4);
                             ss.BeginSend(GetHttpCode(out4.Status), Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: " + result4.Length + "\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: " + result4.Length + "\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
                             ss.BeginSend(result4, (ex, py) => { ss.Shutdown(); }, null);
                         }
                         catch (Exception)
                         {
-                            ss.BeginSend("HTTP/1.1 403 Forbidden\n", Ignore, null);
-                            ss.BeginSend("Content-Type: application/json\n", Ignore, null);
-                            ss.BeginSend("Content-Length: 0\n", Ignore, null);
+                            ss.BeginSend("HTTP/1.1 403 Forbidden\r\n", Ignore, null);
+                            ss.BeginSend("Content-Type: application/json\r\n", Ignore, null);
+                            ss.BeginSend("Content-Length: 0\r\n", Ignore, null);
                             ss.BeginSend("\r\n", Ignore, null);
-                            ss.Shutdown();
+                            ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                         }
                         break;
                     default:
-                        ss.BeginSend("HTTP/1.1 400 Bad Request\n", Ignore, null);
+                        ss.BeginSend("HTTP/1.1 400 Bad Request\r\n", Ignore, null);
+                        ss.BeginSend("\r\n", Ignore, null);
+                        ss.BeginSend("", (ex, py) => { ss.Shutdown(); }, null);
                         break;
                 }
                 /*string result =
@@ -287,23 +290,23 @@ namespace Boggle
         {
             if (status == HttpStatusCode.OK)
             {
-                return "HTTP/1.1 200 OK\n";
+                return "HTTP/1.1 200 OK\r\n";
             }
             if (status == HttpStatusCode.Created)
             {
-                return "HTTP/1.1 201 Created\n";
+                return "HTTP/1.1 201 Created\r\n";
             }
             if (status == HttpStatusCode.Accepted)
             {
-                return "HTTP/1.1 202 Accepted\n";
+                return "HTTP/1.1 202 Accepted\r\n";
             }
             if (status == HttpStatusCode.Conflict)
             {
-                return "HTTP/1.1 409 Conflict\n";
+                return "HTTP/1.1 409 Conflict\r\n";
             }
             else
             {
-                return "HTTP/1.1 403 Forbidden\n";
+                return "HTTP/1.1 403 Forbidden\r\n";
             }
         }
 
