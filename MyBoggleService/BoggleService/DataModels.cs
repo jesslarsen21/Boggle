@@ -7,16 +7,16 @@ namespace Boggle
     [DataContract]
     public class User
     {
-        [DataMember(EmitDefaultValue = false)]
+        [DataMember]
         public string Nickname { get; set; }
 
-        [DataMember(EmitDefaultValue = false)]
+        [DataMember]
         public string UserToken { get; set; }
 
         [DataMember]
         public int Score { get; set; }
 
-        [DataMember(EmitDefaultValue = false)]
+        [DataMember]
         public List<Words> WordsPlayed { get; set; }
 
         public List<string> GetAllWordsPlayed()
@@ -64,7 +64,7 @@ namespace Boggle
     [DataContract]
     public class Game
     {
-        [DataMember(EmitDefaultValue = false)]
+        [DataMember]
         public string GameState { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
@@ -77,7 +77,7 @@ namespace Boggle
         [DataMember(EmitDefaultValue = false)]
         public int TimeLimit { get; set; }
 
-        [DataMember(EmitDefaultValue = false)]
+        [DataMember]
         public int TimeLeft { get; set; }
 
         [DataMember(EmitDefaultValue = false)]

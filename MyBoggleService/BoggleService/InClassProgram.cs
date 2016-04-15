@@ -89,7 +89,7 @@ namespace Boggle
                     else if (method == "GET" && url.Contains("/games") && !url.EndsWith("/games"))
                     {
                         methodNumber = 4;
-                        if (url.Contains("brief"))
+                        if (url.Contains("brief") || url.Contains("Brief"))
                         {
                             string[] words = url.Split('?');
                             gameID = words[0].Substring(25);

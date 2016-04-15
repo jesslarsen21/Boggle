@@ -472,7 +472,7 @@ namespace Boggle
 
                         BoggleBoard board = new BoggleBoard(boardstring);
                         string word = info.Word.Trim().ToUpper();
-                        int Score = 0; ;
+                        int Score = 0;
                         if (!board.CanBeFormed(word))
                         {
                             Score = -1;
@@ -522,9 +522,9 @@ namespace Boggle
                             "INSERT INTO Words (Word, Player, Score, GameID) VALUES (@Word, @Player, @Score, @GameID)", conn, trans))
                         {
                             command.Parameters.AddWithValue("@Player", info.UserToken);
-                            command.Parameters.AddWithValue("@word", word);
+                            command.Parameters.AddWithValue("@Word", word);
                             command.Parameters.AddWithValue("@Score", Score);
-                            command.Parameters.AddWithValue("GameID", gameID);
+                            command.Parameters.AddWithValue("@GameID", gameID);
                             try
                             {
                                 command.ExecuteNonQuery();
