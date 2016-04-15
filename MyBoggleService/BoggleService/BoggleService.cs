@@ -710,7 +710,7 @@ namespace Boggle
                                         reader.Close();
                                         return null;
                                     }
-                                    while (reader.Read())
+                                    while (reader.Read()) 
                                     {
                                         p1.Score = (int)reader["Score"];
                                         p1.Nickname = (string)reader["Nickname"];
