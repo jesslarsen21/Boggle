@@ -771,7 +771,7 @@ namespace Boggle
                             }
 
                             using (SqlCommand command = new SqlCommand(
-                                "SELECT Word FROM Words WHERE GameID = @GameID AND Player = @Player", conn, trans))
+                                "SELECT Word, Score FROM Words WHERE GameID = @GameID AND Player = @Player", conn, trans))
                             {
                                 command.Parameters.AddWithValue("@GameID", gameID);
                                 command.Parameters.AddWithValue("@Player", player2);

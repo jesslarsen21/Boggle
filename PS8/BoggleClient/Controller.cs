@@ -254,6 +254,7 @@ namespace BoggleClient
                         // Display the final results in a new window
                         using (FinalScore form = new FinalScore())
                         {
+                            
                             form.Player1Name = player1.Nickname + ": " + player1.Score;
                             form.Player2Name = player2.Nickname + ": " + player2.Score;
 
